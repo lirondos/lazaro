@@ -1,0 +1,13 @@
+# Dependencies
+spacy==2.1.8
+python-crfsuite==0.9.6
+nltk==3.4.5
+regex
+pymagnitude
+
+# Development
+black
+pylint
+flake8
+mypy
+pytest

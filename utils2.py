@@ -1,0 +1,456 @@
+
+
+from typing import Sequence, Dict, Optional, List
+
+from spacy.tokens import Doc
+import pymagnitude
+import csv
+from typing import Sequence, Dict, List, NamedTuple, Tuple, Counter
+from utils import FeatureExtractor, ScoringCounts, ScoringEntity
+from spacy.tokens import Span
+from typing import Iterable, Sequence, Tuple, List, Dict
+
+from nltk import ConfusionMatrix
+from spacy.tokens import Span, Doc, Token
+
+from utils import FeatureExtractor, EntityEncoder, PRF1
+
+from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
+
+
+from spacy.tokens import Token
+
+import pycrfsuite
+
+from collections import defaultdict
+
+import sys
+from decimal import ROUND_HALF_UP, Context
+
+import spacy
+
+
+class WindowedTokenFeatureExtractor:
+    def __init__(self, feature_extractors: Sequence[FeatureExtractor], window_size: int):
+        self.extractors = feature_extractors
+        self.window_size = window_size
+
+    def extract(self, tokens: Sequence[str]) -> List[Dict[str, float]]:
+        featurized = []
+        for i in range(0, len(tokens)):
+            dict_feat = dict()
+            token = tokens[i]
+            for extractor in self.extractors:
+                extractor.extract(token, i, 0, tokens, dict_feat)
+                for j in range(1, self.window_size + 1):
+                    if i - j >= 0:
+                        extractor.extract(tokens[i - j], i - j, -j, tokens, dict_feat)
+                    if i + j < len(tokens):
+                        extractor.extract(tokens[i + j], i + j, j, tokens, dict_feat)
+            featurized.append(dict_feat)
+        return featurized
+
+class CRFsuiteEntityRecognizer:
+    def __init__(
+        self, feature_extractor: WindowedTokenFeatureExtractor, encoder: EntityEncoder
+    ) -> None:
+        self.feature_extractor = feature_extractor
+        self._encoder = encoder
+
+    @property
+    def encoder(self) -> EntityEncoder:
+        return self._encoder
+
+    def set_encoder(self, encoder):
+        self._encoder = encoder
+
+    def train(self, docs: Iterable[Doc], algorithm: str, params: dict, path: str) -> None:
+        trainer = pycrfsuite.Trainer(algorithm, verbose=False)
+        trainer.set_params(params)
+        for doc in docs:
+            #print(doc)
+            for sent in doc.sents:
+                tokens = list(sent)
+                features = self.feature_extractor.extract(tokens)
+                #for feature in features:
+                    #print(feature)
+                #features = self.feature_extractor.extract([token.text for token in tokens])
+                encoded_labels = self._encoder.encode(tokens)
+                trainer.append(features, encoded_labels)
+        trainer.train(path)
+        self.tagger = pycrfsuite.Tagger()
+        self.tagger.open(path)
+
+    def __call__(self, doc: Doc) -> Doc:
+        if not self.tagger:
+            raise ValueError('train() method should be called first!')
+        entities = list()
+        #print(doc.ents)
+        for sent in doc.sents:
+            tokens = list(sent)
+            tags = self.predict_labels(tokens)
+            entities.append(decode_bilou(tags, tokens, doc))
+        doc.ents = [item for sublist in entities for item in sublist]
+        #print(doc.ents)
+        return doc
+
+    def predict_labels(self, tokens: Sequence[str]) -> List[str]:
+        features = self.feature_extractor.extract(tokens)
+        #features = self.feature_extractor.extract([str(token) for token in tokens])
+        tags = self.tagger.tag(features)
+        return tags
+
+class BILOUEncoder(EntityEncoder):
+    def encode(self, tokens: Sequence[Token]) -> List[str]:
+        encoded = []
+        labels = [token.ent_iob_ + "-" + token.ent_type_ for token in tokens]
+        spans = decode_bilou(labels, tokens, tokens[0].doc)
+        for span in spans:
+            if self.is_unitary(span):
+                encoded.append("U-" + span.label_)
+            elif self.is_empty(span):
+                for i in range(span.start, span.end):
+                    encoded.append("O")
+            else:
+                encoded.append("B-" + span.label_)
+                for i in range(span.start + 1, span.end-1):
+                    encoded.append("I-" + span.label_)
+                encoded.append("L-" + span.label_)
+        return encoded
+
+    def is_unitary(self, span):
+        return span.end == span.start + 1 and span.label > 0
+
+    def is_empty(self, span):
+        return span.label == 0
+
+
+class BIOEncoder(EntityEncoder):
+    def encode(self, tokens: Sequence[Token]) -> List[str]:
+        labels = [token.ent_iob_ + "-" + token.ent_type_ for token in tokens]
+        spans = decode_bilou(labels, tokens, tokens[0].doc)
+        encoded = []
+        for span in spans:
+            if self.is_empty(span):
+                for i in range(span.start, span.end):
+                    encoded.append("O")
+            else:
+                encoded.append("B-" + span.label_)
+                for i in range(span.start + 1, span.end):
+                    encoded.append("I-" + span.label_)
+        return encoded
+
+    def is_empty(self, span):
+        return span.label == 0
+
+
+class IOEncoder(EntityEncoder):
+    def encode(self, tokens: Sequence[Token]) -> List[str]:
+        labels = [token.ent_iob_ + "-" + token.ent_type_ for token in tokens]
+        spans = decode_bilou(labels, tokens, tokens[0].doc)
+        encoded = []
+        for span in spans:
+            if self.is_empty(span):
+                for i in range(span.start, span.end):
+                    encoded.append("O")
+            else:
+                for i in range(span.start, span.end):
+                    encoded.append("I-" + span.label_)
+        return encoded
+
+    def is_empty(self, span):
+        return span.label == 0
+
+def decode_bilou(labels: Sequence[str], tokens: Sequence[Token], doc: Doc) -> List[Span]:
+    spans = []
+    tag_interruptus = False
+    span_type = None
+    i = 0
+    initial = None
+    while i < len(labels):
+        label = labels[i]
+        if (label == "O"):  # The current label is O
+            if tag_interruptus:  # If we were in the middle of a span, we create it and append it
+                spans.append(Span(doc, tokens[initial].i, tokens[i].i, span_type))
+            tag_interruptus = False  # We are no longer in the middle of a tag
+        else:  # The current label is B I L or U
+            label_type = label.split("-")[1]  # We get the type (PER, MISC, etc)
+            if tag_interruptus:  # if we were in the middle of a tag
+                if label_type != span_type:  # and the types dont match
+                    spans.append(Span(doc, tokens[initial].i, tokens[i].i,
+                                      span_type))  # we close the previous span and append it
+                    span_type = label_type  # we are now in the middle of a new span
+                    initial = i
+            else:  # we were not in the middle of a span
+                initial = i  # initial position will be the current position
+                tag_interruptus = True  # we are now in the middle of a span
+                span_type = label_type
+        i = i + 1
+    if tag_interruptus:  # this covers entities at the end of the sentence (we left a tag_interruptus at the end of the list)
+        spans.append(Span(doc, tokens[initial].i, tokens[i-1].i + 1, span_type))
+    return spans
+
+class BiasFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0:
+            features["bias"] = 1.0
+
+class TokenFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        features["tok["+str(relative_idx)+"]="+token.text]=1.0
+
+class UppercaseFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if token.text.isupper():
+            features["uppercase["+str(relative_idx)+"]"]=1.0
+
+class HasApostrophe(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if token.endswith("'s"):
+            features["has_apostrophe["+str(relative_idx)+"]"]=1.0
+
+class IsShortWord(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if len(token)<4:
+            features["is_short["+str(relative_idx)+"]"]=1.0
+
+class IsQualWord(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        quality_words = ["good", "bad", "terrible", "awful", "nice", "lovely", "great"]
+        if token in quality_words:
+            features["quality_word["+str(relative_idx)+"]"]=1.0
+
+class WordEnding(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0:
+            features["ending["+str(relative_idx)+"]="+token.text[-3:]]=1.0
+
+
+class TitlecaseFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if token.text.istitle():
+            features["titlecase["+str(relative_idx)+"]"]=1.0
+
+
+class InitialTitlecaseFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if token.text.istitle() and current_idx == 0:
+            features["initialtitlecase["+str(relative_idx)+"]"] = 1.0
+
+
+class PunctuationFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if PUNC_REPEAT_RE.match(token.text):
+            features["punc["+str(relative_idx)+"]"] = 1.0
+
+class QuotationFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if token.text in ["\"", "\'"]:
+            features["quot["+str(relative_idx)+"]"] = 1.0
+
+class DigitFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if DIGIT_RE.search(token):
+            features["digit["+str(relative_idx)+"]"] = 1.0
+
+class LemmaFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        features["lemma["+str(relative_idx)+"]="+token.lemma_] = 1.0
+
+class POStagFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0:
+            features["postag["+str(relative_idx)+"]="+token.pos_] = 1.0
+
+class WordShapeFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        """
+        shape = []
+        for letter in token:
+            if DIGIT_RE.search(letter):
+                shape.append("0")
+            elif LOWERCASE_RE.search(letter):
+                shape.append('x')
+            elif UPPERCASE_RE.search(letter):
+                shape.append('X')
+            else:
+                shape.append(letter)
+        """
+        features["shape["+str(relative_idx)+"]="+token.shape_] = 1.0
+
+class GraphotacticFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        graphotactic = []
+        i = 0
+        while i < (len(token.text) - 1):
+            letter = token.text[i].lower()
+            if letter in "aeiouáéíóúü":
+                graphotactic.append("v")
+            elif letter in string.punctuation:
+                graphotactic.append("_")
+            else:
+                if (letter in "tpdfgc" and token.text[i+1].lower() in "rl") or\
+                        (letter == "c" and token.text[i+1].lower() == "h") or \
+                        (letter == "r" and token.text[i+1].lower() == "r") or \
+                        (letter == "l" and token.text[i+1].lower() == "l") or \
+                        (letter in "pc" and token.text[i+1].lower() in "ct") or \
+                        (letter == "m" and token.text[i + 1].lower() in "pbn") or \
+                        (letter == "g" and token.text[i + 1].lower() == "n") or \
+                        (letter in "bx" and token.text[i+1].lower() not in "aeiouáéíóúü"):
+                    graphotactic.extend(["b", "r"])
+                    i = i + 2
+                    continue
+                else:
+                    graphotactic.append("c")
+            i += 1
+        if token.text[-1] in "aeiouáéíóúürslindz":
+            graphotactic.append("e")
+        else:
+            graphotactic.append("c")
+        graphotactic_string = "".join(graphotactic)
+        features["graphotactic["+str(relative_idx)+"]="+graphotactic_string] = 1.0
+        if relative_idx == 0 and len(graphotactic_string)>=2:
+            for i in range(-1, len(graphotactic_string) - 1):
+                if i == -1:
+                    trigram = "START" + graphotactic_string[0] + graphotactic_string[1]
+                if i == len(graphotactic_string) - 2:
+                    trigram = graphotactic_string[len(graphotactic_string) - 2] + graphotactic_string[len(graphotactic_string) - 1] + "END"
+                if i >= 0 and i < len(graphotactic_string) - 2:
+                    trigram = graphotactic_string[i] + graphotactic_string[i + 1] + graphotactic_string[i + 2]
+                # print(trigram)
+                features["trigram_grapho[" + str(relative_idx) + "]=" + trigram] = 1.0
+
+class TrigramFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        my_token = token.text
+        if relative_idx == 0 and len(my_token)>=2:
+           for i in range(-1, len(my_token)-1):
+               if i == -1:
+                   trigram = "START"+my_token[0]+my_token[1]
+               if i == len(my_token) - 2:
+                   trigram = my_token[len(my_token) - 2]+my_token[len(my_token) - 1]+"END"
+               if i >= 0 and i < len(my_token) - 2:
+                   trigram = my_token[i]+my_token[i+1]+my_token[i+2]
+               #print(trigram)
+               features["trigram["+str(relative_idx)+"]="+trigram]=1.0
+
+class IsInDict(FeatureExtractor):
+    def __init__(self, dict_path: str) -> None:
+        with open(dict_path, mode="r", encoding="utf-8") as f:
+            self.lemmas = {word.rstrip('\n') for word in f.readlines()}
+            #print(self.lemmas)
+
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx  == 0:
+            if token.lemma_.lower() in self.lemmas:
+                features["is_in_RAE["+str(relative_idx)+"]"]=1.0
+
+class BigramFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        token = token.text
+        if relative_idx == 0 and len(token)>=2:
+           for i in range(len(token)-2):
+               if i == 0:
+                   bigram = "START"+token[0]
+               if i > 0 and i < len(token) - 2:
+                   bigram = token[i]+token[i+1]
+               #print(trigram)
+               features["bigram["+str(relative_idx)+"]="+bigram]=1.0
+           bigram = token[len(token) - 1]+"END"
+           features["bigram["+str(relative_idx)+"]="+bigram]=1.0
+
+class WordVectorFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0:
+           features["wordvector["+str(relative_idx)+"]="+str(token.vector_norm)]=1.0
+    """
+    def extract(
+        self,
+        token: str,
+        current_idx: int,
+        relative_idx: int,
+        tokens: Sequence[str],
+        features: Dict[str, float],
+    ) -> None:
+        if relative_idx  == 0:
+            word_vector = token.vector
+            keys = self.get_keys(word_vector)
+            features.update(zip(keys, word_vector))
+
+    def get_keys(self, word_vector):
+        return ["v"+str(i) for i in range(len(word_vector))]
+    """
+
+
+class WordVectorFeatureOld(FeatureExtractor):
+    def __init__(self, vectors_path: str, scaling: float = 1.0) -> None:
+        self.vectors = pymagnitude.Magnitude(vectors_path, normalized=False)
+        self.scaling = scaling
+
+    def extract(
+        self,
+        token: str,
+        current_idx: int,
+        relative_idx: int,
+        tokens: Sequence[str],
+        features: Dict[str, float],
+    ) -> None:
+        if relative_idx  == 0:
+            word_vector = self.vectors.query(token)
+            keys = self.get_keys(word_vector)
+            features.update(zip(keys, self.scaling*word_vector))
+
+    def get_keys(self, word_vector):
+        return ["v"+str(i) for i in range(len(word_vector))]
+
+
+
+class BrownClusterFeature(FeatureExtractor):
+    def __init__(
+        self,
+        clusters_path: str,
+        *,
+        use_full_paths: bool = False,
+        use_prefixes: bool = False,
+        prefixes: Optional[Sequence[int]] = None,
+    ):
+       if not use_full_paths and not use_prefixes:
+           raise ValueError('Either use_full_paths or use_prefixes has to be True!')
+       self.use_full_paths = use_full_paths
+       self.use_prefixes = use_prefixes
+       self.prefixes = prefixes
+       self.clusters = dict()
+       self.populate_clusters(clusters_path)
+
+    def populate_clusters(self, path):
+       with open(path, encoding="utf-8") as tsv:
+           for line in csv.reader(tsv, delimiter="\t", quoting=csv.QUOTE_NONE):
+               self.clusters[line[1]] = line[0]
+
+
+    def extract(
+        self,
+        token: str,
+        current_idx: int,
+        relative_idx: int,
+        tokens: Sequence[str],
+        features: Dict[str, float],
+    ) -> None:
+        if relative_idx == 0 and token in self.clusters:
+            if self.use_full_paths:
+                features["cpath="+self.clusters[token]] = 1.0
+
+            if self.use_prefixes:
+                path = self.clusters[token]
+                if not self.prefixes:
+                    for i in range(1, len(path)+1):
+                        features["cprefix"+str(i)+"="+path[:i]] = 1.0
+                else:
+                    for prefix in self.prefixes:
+                        if prefix <= len(path):
+                            features["cprefix" + str(prefix) + "=" + path[:prefix]] = 1.0
+
+
+
+
+
