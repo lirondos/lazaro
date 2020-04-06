@@ -3,7 +3,7 @@
 from typing import Sequence, Dict, Optional, List
 
 from spacy.tokens import Doc
-import pymagnitude
+#import pymagnitude
 import csv
 from typing import Sequence, Dict, List, NamedTuple, Tuple, Counter
 from utils import FeatureExtractor, ScoringCounts, ScoringEntity
@@ -16,6 +16,11 @@ from spacy.tokens import Span, Doc, Token
 from utils import FeatureExtractor, EntityEncoder, PRF1
 
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
+import string
+import frozendict
+from functools import lru_cache
+from nerpy.embeddings import SqliteWordEmbeddings, WordEmbedding
+import time
 
 
 from spacy.tokens import Token
@@ -28,6 +33,20 @@ import sys
 from decimal import ROUND_HALF_UP, Context
 
 import spacy
+
+import numpy as np
+from collections import defaultdict
+from functools import partial
+from gensim.models.keyedvectors import KeyedVectors
+
+VECTORS_FOLDER = "embeddings/"
+
+VECTORS_PATH = {"fasttext_SUC": "embeddings-l-model.vec",
+                "fasttext_wiki": "wiki.es.vec",
+                "w2v_SBWC" : "SBW-vectors-300-min5.txt",
+                "glove_SBWC": "glove-sbwc.i25.vec",
+                "fasttext_SBWC": "fasttext-sbwc.3.6.e20.vec",
+                "fasttext_crawl": "cc.es.300.vec"}
 
 
 class WindowedTokenFeatureExtractor:
@@ -64,8 +83,8 @@ class CRFsuiteEntityRecognizer:
     def set_encoder(self, encoder):
         self._encoder = encoder
 
-    def train(self, docs: Iterable[Doc], algorithm: str, params: dict, path: str) -> None:
-        trainer = pycrfsuite.Trainer(algorithm, verbose=False)
+    def train(self, docs: Iterable[Doc], algorithm: str, params: dict, path: str, verbose = False) -> None:
+        trainer = pycrfsuite.Trainer(algorithm, verbose=verbose)
         trainer.set_params(params)
         for doc in docs:
             #print(doc)
@@ -73,9 +92,10 @@ class CRFsuiteEntityRecognizer:
                 tokens = list(sent)
                 features = self.feature_extractor.extract(tokens)
                 #for feature in features:
-                    #print(feature)
+                #print(feature)
                 #features = self.feature_extractor.extract([token.text for token in tokens])
                 encoded_labels = self._encoder.encode(tokens)
+                #print(list(zip(tokens, encoded_labels)))
                 trainer.append(features, encoded_labels)
         trainer.train(path)
         self.tagger = pycrfsuite.Tagger()
@@ -116,6 +136,55 @@ class BILOUEncoder(EntityEncoder):
                 for i in range(span.start + 1, span.end-1):
                     encoded.append("I-" + span.label_)
                 encoded.append("L-" + span.label_)
+        return encoded
+
+    def is_unitary(self, span):
+        return span.end == span.start + 1 and span.label > 0
+
+    def is_empty(self, span):
+        return span.label == 0
+
+class BMESEncoder(EntityEncoder):
+    def encode(self, tokens: Sequence[Token]) -> List[str]:
+        encoded = []
+        labels = [token.ent_iob_ + "-" + token.ent_type_ for token in tokens]
+        spans = decode_bilou(labels, tokens, tokens[0].doc)
+        for span in spans:
+            if self.is_unitary(span):
+                encoded.append("S-" + span.label_)
+            elif self.is_empty(span):
+                for i in range(span.start, span.end):
+                    encoded.append("O")
+            else:
+                encoded.append("B-" + span.label_)
+                for i in range(span.start + 1, span.end-1):
+                    encoded.append("M-" + span.label_)
+                encoded.append("E-" + span.label_)
+        return encoded
+
+    def is_unitary(self, span):
+        return span.end == span.start + 1 and span.label > 0
+
+    def is_empty(self, span):
+        return span.label == 0
+
+
+class BIOESEncoder(EntityEncoder):
+    def encode(self, tokens: Sequence[Token]) -> List[str]:
+        encoded = []
+        labels = [token.ent_iob_ + "-" + token.ent_type_ for token in tokens]
+        spans = decode_bilou(labels, tokens, tokens[0].doc)
+        for span in spans:
+            if self.is_unitary(span):
+                encoded.append("S-" + span.label_)
+            elif self.is_empty(span):
+                for i in range(span.start, span.end):
+                    encoded.append("O")
+            else:
+                encoded.append("B-" + span.label_)
+                for i in range(span.start + 1, span.end-1):
+                    encoded.append("I-" + span.label_)
+                encoded.append("E-" + span.label_)
         return encoded
 
     def is_unitary(self, span):
@@ -250,7 +319,7 @@ class QuotationFeature(FeatureExtractor):
 
 class DigitFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
-        if DIGIT_RE.search(token):
+        if DIGIT_RE.search(token.text):
             features["digit["+str(relative_idx)+"]"] = 1.0
 
 class LemmaFeature(FeatureExtractor):
@@ -280,45 +349,46 @@ class WordShapeFeature(FeatureExtractor):
 
 class GraphotacticFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
-        graphotactic = []
-        i = 0
-        while i < (len(token.text) - 1):
-            letter = token.text[i].lower()
-            if letter in "aeiouáéíóúü":
-                graphotactic.append("v")
-            elif letter in string.punctuation:
-                graphotactic.append("_")
-            else:
-                if (letter in "tpdfgc" and token.text[i+1].lower() in "rl") or\
-                        (letter == "c" and token.text[i+1].lower() == "h") or \
-                        (letter == "r" and token.text[i+1].lower() == "r") or \
-                        (letter == "l" and token.text[i+1].lower() == "l") or \
-                        (letter in "pc" and token.text[i+1].lower() in "ct") or \
-                        (letter == "m" and token.text[i + 1].lower() in "pbn") or \
-                        (letter == "g" and token.text[i + 1].lower() == "n") or \
-                        (letter in "bx" and token.text[i+1].lower() not in "aeiouáéíóúü"):
-                    graphotactic.extend(["b", "r"])
-                    i = i + 2
-                    continue
+        if relative_idx == 0:
+            graphotactic = []
+            i = 0
+            while i < (len(token.text) - 1):
+                letter = token.text[i].lower()
+                if letter in "aeiouáéíóúü":
+                    graphotactic.append("v")
+                elif letter in string.punctuation:
+                    graphotactic.append("_")
                 else:
-                    graphotactic.append("c")
-            i += 1
-        if token.text[-1] in "aeiouáéíóúürslindz":
-            graphotactic.append("e")
-        else:
-            graphotactic.append("c")
-        graphotactic_string = "".join(graphotactic)
-        features["graphotactic["+str(relative_idx)+"]="+graphotactic_string] = 1.0
-        if relative_idx == 0 and len(graphotactic_string)>=2:
-            for i in range(-1, len(graphotactic_string) - 1):
-                if i == -1:
-                    trigram = "START" + graphotactic_string[0] + graphotactic_string[1]
-                if i == len(graphotactic_string) - 2:
-                    trigram = graphotactic_string[len(graphotactic_string) - 2] + graphotactic_string[len(graphotactic_string) - 1] + "END"
-                if i >= 0 and i < len(graphotactic_string) - 2:
-                    trigram = graphotactic_string[i] + graphotactic_string[i + 1] + graphotactic_string[i + 2]
-                # print(trigram)
-                features["trigram_grapho[" + str(relative_idx) + "]=" + trigram] = 1.0
+                    if (letter in "tpdfgc" and token.text[i+1].lower() in "rl") or\
+                            (letter == "c" and token.text[i+1].lower() == "h") or \
+                            (letter == "r" and token.text[i+1].lower() == "r") or \
+                            (letter == "l" and token.text[i+1].lower() == "l") or \
+                            (letter in "pc" and token.text[i+1].lower() in "ct") or \
+                            (letter == "m" and token.text[i + 1].lower() in "pbn") or \
+                            (letter == "g" and token.text[i + 1].lower() == "n") or \
+                            (letter in "bx" and token.text[i+1].lower() not in "aeiouáéíóúü"):
+                        graphotactic.extend(["b", "r"])
+                        i = i + 2
+                        continue
+                    else:
+                        graphotactic.append("c")
+                i += 1
+            if token.text[-1] in "aeiouáéíóúürslindz":
+                graphotactic.append("e")
+            else:
+                graphotactic.append("c")
+            graphotactic_string = "".join(graphotactic)
+            features["graphotactic["+str(relative_idx)+"]="+graphotactic_string] = 1.0
+            if relative_idx == 0 and len(graphotactic_string)>=2:
+                for i in range(-1, len(graphotactic_string) - 1):
+                    if i == -1:
+                        trigram = "START" + graphotactic_string[0] + graphotactic_string[1]
+                    if i == len(graphotactic_string) - 2:
+                        trigram = graphotactic_string[len(graphotactic_string) - 2] + graphotactic_string[len(graphotactic_string) - 1] + "END"
+                    if i >= 0 and i < len(graphotactic_string) - 2:
+                        trigram = graphotactic_string[i] + graphotactic_string[i + 1] + graphotactic_string[i + 2]
+                    # print(trigram)
+                    features["trigram_grapho[" + str(relative_idx) + "]=" + trigram] = 1.0
 
 class TrigramFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
@@ -334,7 +404,7 @@ class TrigramFeature(FeatureExtractor):
                #print(trigram)
                features["trigram["+str(relative_idx)+"]="+trigram]=1.0
 
-class IsInDict(FeatureExtractor):
+class IsInDictES(FeatureExtractor):
     def __init__(self, dict_path: str) -> None:
         with open(dict_path, mode="r", encoding="utf-8") as f:
             self.lemmas = {word.rstrip('\n') for word in f.readlines()}
@@ -343,7 +413,96 @@ class IsInDict(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
         if relative_idx  == 0:
             if token.lemma_.lower() in self.lemmas:
-                features["is_in_RAE["+str(relative_idx)+"]"]=1.0
+                features["is_in_DictES["+str(relative_idx)+"]"]=1.0
+
+# https://github.com/dwyl/english-words/blob/master/words_alpha.txt
+class IsInDictEN(FeatureExtractor):
+    def __init__(self, dict_path: str) -> None:
+        with open(dict_path, mode="r", encoding="utf-8") as f:
+            self.lemmas = {word.rstrip('\n') for word in f.readlines()}
+            #print(self.lemmas)
+
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx  == 0:
+            if token.text.lower() in self.lemmas:
+                features["is_in_DictEN["+str(relative_idx)+"]"]=1.0
+
+
+class WordProbability_EN(FeatureExtractor):
+    def __init__(self, dict_path: str) -> None:
+        with open(dict_path, mode="r", encoding="utf-8") as f:
+            self.lemmas = {word.rstrip('\n') for word in f.readlines()}
+            self.trigram_counts = defaultdict(lambda: defaultdict(int))
+            self.bigram_counts = defaultdict(int)
+            for lemma in self.lemmas:
+                if len(lemma) > 1:
+                    self.trigram_counts[("START", lemma[0])][lemma[1]] += 1
+                    self.bigram_counts[("START", lemma[0])] += 1
+                    self.trigram_counts[(lemma[-2], lemma[-1])]["END"] += 1
+                    self.bigram_counts[(lemma[-2], lemma[-1])] += 1
+                    for index, letter in enumerate(lemma[1:-1]):
+                        self.trigram_counts[(lemma[index - 1], letter)][lemma[index + 1]] += 1
+                        self.bigram_counts[(lemma[index - 1], letter)] += 1
+                    else:
+                        self.trigram_counts[("START", lemma[0])]["END"] += 1
+                        self.bigram_counts[("START", lemma[0])] += 1
+
+    def get_trigram_prob(self, char0, char1, char2):
+        if self.bigram_counts[(char0, char1)] == 0:
+            return 1e-10
+        return self.trigram_counts[(char0, char1)][char2] / self.bigram_counts[(char0, char1)]
+
+    def get_word_probability(self, word):
+        if len(word) > 1:
+            probability = self.get_trigram_prob("START", word[0], word[1])
+            probability = probability * self.get_trigram_prob(word[-2], word[-1], "END")
+            for index, letter in enumerate(word[1:-1]):
+                probability = probability * self.get_trigram_prob(word[index - 1], letter, word[index + 1])
+        else:
+            probability = self.get_trigram_prob("START", word[0], "END")
+        return probability
+
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0:
+            features["EN_prob[" + str(relative_idx) + "]"] = self.get_word_probability(token.text.lower())
+#https://raw.githubusercontent.com/julox/spanish_lexicon/master/spanish_lexicon.csv
+class WordProbability_ES(FeatureExtractor):
+    def __init__(self, dict_path: str) -> None:
+        with open(dict_path, mode="r", encoding="utf-8") as f:
+            self.lemmas = {line.split(';')[0][1:-1] for line in f.readlines()[1:]}
+            self.trigram_counts = defaultdict(lambda: defaultdict(int))
+            self.bigram_counts = defaultdict(int)
+            for lemma in self.lemmas:
+                if len(lemma) > 1:
+                    self.trigram_counts[("START", lemma[0])][lemma[1]] += 1
+                    self.bigram_counts[("START", lemma[0])] += 1
+                    self.trigram_counts[(lemma[-2], lemma[-1])]["END"] += 1
+                    self.bigram_counts[(lemma[-2], lemma[-1])] += 1
+                    for index, letter in enumerate(lemma[1:-1]):
+                        self.trigram_counts[(lemma[index - 1], letter)][lemma[index + 1]] += 1
+                        self.bigram_counts[(lemma[index - 1], letter)] += 1
+                    else:
+                        self.trigram_counts[("START", lemma[0])]["END"] += 1
+                        self.bigram_counts[("START", lemma[0])] += 1
+
+    def get_trigram_prob(self, char0, char1, char2):
+        if self.bigram_counts[(char0, char1)] == 0:
+            return 1e-10
+        return self.trigram_counts[(char0, char1)][char2] / self.bigram_counts[(char0, char1)]
+
+    def get_word_probability(self, word):
+        if len(word) > 1:
+            probability = self.get_trigram_prob("START", word[0], word[1])
+            probability = probability * self.get_trigram_prob(word[-2], word[-1], "END")
+            for index, letter in enumerate(word[1:-1]):
+                probability = probability * self.get_trigram_prob(word[index - 1], letter, word[index + 1])
+        else:
+            probability = self.get_trigram_prob("START", word[0], "END")
+        return probability
+
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0:
+            features["ES_prob[" + str(relative_idx) + "]"] = self.get_word_probability(token.text.lower())
 
 class BigramFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
@@ -359,11 +518,13 @@ class BigramFeature(FeatureExtractor):
            bigram = token[len(token) - 1]+"END"
            features["bigram["+str(relative_idx)+"]="+bigram]=1.0
 
-class WordVectorFeature(FeatureExtractor):
+class WordVectorFeatureNorm(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
         if relative_idx == 0:
-           features["wordvector["+str(relative_idx)+"]="+str(token.vector_norm)]=1.0
-    """
+           features["wordvector_norm["+str(relative_idx)+"]"]=token.vector_norm
+
+class WordVectorFeatureSpacy(FeatureExtractor):
+
     def extract(
         self,
         token: str,
@@ -372,20 +533,20 @@ class WordVectorFeature(FeatureExtractor):
         tokens: Sequence[str],
         features: Dict[str, float],
     ) -> None:
-        if relative_idx  == 0:
             word_vector = token.vector
             keys = self.get_keys(word_vector)
             features.update(zip(keys, word_vector))
 
     def get_keys(self, word_vector):
         return ["v"+str(i) for i in range(len(word_vector))]
-    """
 
-
-class WordVectorFeatureOld(FeatureExtractor):
-    def __init__(self, vectors_path: str, scaling: float = 1.0) -> None:
-        self.vectors = pymagnitude.Magnitude(vectors_path, normalized=False)
+class WordVectorFeature(FeatureExtractor):
+    def __init__(self, vectors: str = "spacy", scaling: float = 1.0) -> None:
+        self.vectors_id = vectors
         self.scaling = scaling
+        if self.vectors_id != "spacy":
+            path_to_vectors = VECTORS_FOLDER + VECTORS_PATH[vectors]
+            self.wordvectors = KeyedVectors.load_word2vec_format(path_to_vectors)
 
     def extract(
         self,
@@ -396,14 +557,80 @@ class WordVectorFeatureOld(FeatureExtractor):
         features: Dict[str, float],
     ) -> None:
         if relative_idx  == 0:
-            word_vector = self.vectors.query(token)
+            if self.vectors_id == "spacy":
+                word_vector = token.vector
+            else:
+                try:
+                    word_vector = self.wordvectors[token.text.lower()]
+                except KeyError:
+                    word_vector = np.zeros(300)
             keys = self.get_keys(word_vector)
-            features.update(zip(keys, self.scaling*word_vector))
+            features.update(zip(keys, self.scaling * word_vector))
 
     def get_keys(self, word_vector):
         return ["v"+str(i) for i in range(len(word_vector))]
 
 
+
+class WordVectorFeatureNerpy(FeatureExtractor):
+    def __init__(self, vectors: str = "spacy", scaling: float = 1.0, cache_size: int = 10000) -> None:
+        self.vectors_id = vectors
+        self.scale = scaling
+        if self.vectors_id != "spacy":
+            path_to_vectors = VECTORS_FOLDER + VECTORS_PATH[vectors]
+            self.word_vectors = SqliteWordEmbeddings.from_text_format(path_to_vectors, "embeddings_db/" + str(time.time()) + "embeddings.db")
+            #self.wordvectors = KeyedVectors.load_word2vec_format(path_to_vectors)
+            self._feature_keys_cache: Dict[int, List[str]] = {}
+            # Store normalized form or None to indicate no match
+            self._word_casing: Dict[str, Optional[str]] = {}
+            # Cache vectors
+            # We look up directly from the vectors if there is no scaling, or add our own wrapper if there is scaling.
+            self._embedding_cache = lru_cache(cache_size)(
+                self.word_vectors.__getitem__
+                if self.scale == 1.0
+                else self._scaled_word_vector
+            )
+
+
+    def extract(
+            self,
+            token: str,
+            current_idx: int,
+            relative_idx: int,
+            tokens: Sequence[str],
+            features: Dict[str, float],
+    ) -> None:
+        if relative_idx == 0:
+            if self.vectors_id == "spacy":
+                word_vector = token.vector
+            else:
+                try:
+                    word_vector = self._embedding_cache(token.text.lower())
+                except KeyError:
+                    word_vector = np.zeros(self.word_vectors.dim)
+            keys = self.get_keys(word_vector)
+            features.update(zip(keys, word_vector))
+
+    def get_keys(self, word_vector):
+        return ["v" + str(i) for i in range(len(word_vector))]
+
+    """
+                try:
+                    feature_keys = self._feature_keys_cache[relative_idx]
+                except KeyError:
+                    feature_keys = [
+                        f"{self.FEATURE}[{index}]={i}" for i in range(word_vectors.dim)
+                    ]
+                    self._feature_keys_cache[relative_idx] = feature_keys
+            features.update(zip(feature_keys, self._embedding_cache(norm_text)))  # type: ignore
+    """
+
+    def _scaled_word_vector(self, word: str) -> Sequence[float]:
+        vec = self.word_vectors[word]
+        # We cannot use in-place multiply because vec is read-only
+        # Ignore type warning because we know this is an ndarray even though the formal return type is
+        # Sequence[float]. Things are this way because it's hard to type annotate an ndarray return.
+        return vec * self.scale  # type: ignore
 
 class BrownClusterFeature(FeatureExtractor):
     def __init__(
@@ -449,8 +676,3 @@ class BrownClusterFeature(FeatureExtractor):
                     for prefix in self.prefixes:
                         if prefix <= len(path):
                             features["cprefix" + str(prefix) + "=" + path[:prefix]] = 1.0
-
-
-
-
-

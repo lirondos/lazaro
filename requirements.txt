@@ -1,12 +1,18 @@
 # Dependencies
-spacy==2.1.8
+spacy==2.2.2
 python-crfsuite==0.9.6
 nltk==3.4.5
 regex
-pymagnitude
+#pymagnitude
+tabulate
+https://github.com/explosion/spacy-models/releases/download/es_core_news_md-2.2.5/es_core_news_md-2.2.5.tar.gz
+numpy>=1.15.0
+six
+gensim
+frozendict
 
 # Development
-black
+#black
 pylint
 flake8
 mypy
