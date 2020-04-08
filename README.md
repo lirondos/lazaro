@@ -1,5 +1,5 @@
 # lazaro
-An annotated corpus and baseline model for automatic extraction of anglicisms in Spanish headlines. 
+An annotated corpus and CRF model for automatic extraction of anglicisms in Spanish headlines. 
 
 This repo contains:
 1. A corpus of 21,570 newspaper headlines written in European Spanish annotated with emergent anglicisms (see ```data``` folder). The headlines were extracted from the Spanish newspaper [eldiario.es](https://www.eldiario.es/).
