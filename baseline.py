@@ -25,7 +25,7 @@ import pickle
 import os
 import string
 from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder
-from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature, TrigramFeature, QuotationFeature, WordEnding, POStagFeature, WordVectorFeature, WordShapeFeature, WordVectorFeatureSpacy, BigramFeature, IsInDictEN, IsInDictES, GraphotacticFeature, LemmaFeature, DigitFeature, PunctuationFeature, WordVectorFeatureNerpy, WordProbability_ES, WordProbability_EN, WordVectorFeatureNorm
+from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature, TrigramFeature, QuotationFeature, WordEnding, POStagFeature, WordVectorFeature, WordShapeFeature, WordVectorFeatureSpacy, BigramFeature, IsInDictEN, IsInDictES, GraphotacticFeature, LemmaFeature, DigitFeature, PunctuationFeature, WordVectorFeatureNerpy, WordProbability_ES, WordProbability_EN, WordVectorFeatureNorm, SentencePositionFeature, BrownClusterFeature
 from tabulate import tabulate
 
 
@@ -261,7 +261,9 @@ def train_predict(train_set, test_set, max_iterations, c1, c2, encoder, window_s
                          GraphotacticFeature(),
                          LemmaFeature(),
                          PunctuationFeature(),
-                         DigitFeature()])
+                         DigitFeature(),
+                        SentencePositionFeature(),
+                        BrownClusterFeature()])
 
     crf = CRFsuiteEntityRecognizer(WindowedTokenFeatureExtractor(features,window_size,), ENCODER_DICT[encoder])
     if args.verbose: print("Training...")

@@ -303,7 +303,7 @@ class TitlecaseFeature(FeatureExtractor):
 
 class InitialTitlecaseFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
-        if token.text.istitle() and current_idx == 0:
+        if (token.text.istitle() and current_idx == 0) or (token.is_title and token.i == 1 and tokens[0].is_punct):
             features["initialtitlecase["+str(relative_idx)+"]"] = 1.0
 
 
@@ -403,6 +403,14 @@ class TrigramFeature(FeatureExtractor):
                    trigram = my_token[i]+my_token[i+1]+my_token[i+2]
                #print(trigram)
                features["trigram["+str(relative_idx)+"]="+trigram]=1.0
+
+class SentencePositionFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0:
+            if token.i == 0 or (token.i == 1 and tokens[0].is_punct):
+                features["isFirstPosition["+str(relative_idx)+"]="]=1.0
+
+
 
 class IsInDictES(FeatureExtractor):
     def __init__(self, dict_path: str) -> None:
@@ -633,6 +641,19 @@ class WordVectorFeatureNerpy(FeatureExtractor):
         return vec * self.scale  # type: ignore
 
 class BrownClusterFeature(FeatureExtractor):
+    def extract(
+            self,
+            token: str,
+            current_idx: int,
+            relative_idx: int,
+            tokens: Sequence[str],
+            features: Dict[str, float],
+    ) -> None:
+        if relative_idx == 0:
+            features["cluster=" + str(token.cluster)] = 1.0
+
+"""
+class BrownClusterFeatureOLD(FeatureExtractor):
     def __init__(
         self,
         clusters_path: str,
@@ -676,3 +697,5 @@ class BrownClusterFeature(FeatureExtractor):
                     for prefix in self.prefixes:
                         if prefix <= len(path):
                             features["cprefix" + str(prefix) + "=" + path[:prefix]] = 1.0
+                            
+"""
