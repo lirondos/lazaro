@@ -6,6 +6,6 @@ This repo contains:
 2. A Conditional Random Field baseline model for anglicism extraction (see ```baseline.py``` script)
 
 For more information please check: 
-*An Annotated Corpus of Emerging Anglicisms in Spanish Newspaper Headlines.* 
+*An Annotated Corpus of Emerging Anglicisms in Spanish Newspaper Headlines*
 Paper to be presented at the 4th Workshop on Computational Approaches to Linguistic Code-Switching (colocated with LREC 2020) https://arxiv.org/abs/2004.02929
 
