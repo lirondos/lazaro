@@ -24,14 +24,15 @@ import argparse
 import pickle
 import os
 import string
+from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature, TrigramFeature, QuotationFeature, WordEnding, POStagFeature, WordVectorFeature, WordShapeFeature, WordVectorFeatureSpacy, BigramFeature, IsInDict, GraphotacticFeature, LemmaFeature, DigitFeature, PunctuationFeature, WordVectorFeatureNerpy, WordProbability, WordVectorFeatureNorm, SentencePositionFeature, BrownClusterFeature, HigherEnglishProbability, QuatrigramFeature, AllCapsFeature, PerplexityFeature
 from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder
-from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature, TrigramFeature, QuotationFeature, WordEnding, POStagFeature, WordVectorFeature, WordShapeFeature, WordVectorFeatureSpacy, BigramFeature, IsInDictEN, IsInDictES, GraphotacticFeature, LemmaFeature, DigitFeature, PunctuationFeature, WordVectorFeatureNerpy, WordProbability_ES, WordProbability_EN, WordVectorFeatureNorm, SentencePositionFeature, BrownClusterFeature
 from tabulate import tabulate
 
 
 NLP = spacy.load('es_core_news_md', disable=["ner"])
 PATH_TO_DICT_ES = "lexicon/es.txt"
 PATH_TO_DICT_EN = "lexicon/en.txt"
+PATH_TO_LEXICON_ES = "lexicon/spanish_lexicon.csv"
 
 
 parser = argparse.ArgumentParser()
@@ -57,15 +58,12 @@ parser.add_argument('--expanded_features', type=bool, default=False, help = 'Inc
 
 ENCODER_DICT = {"BIO": BIOEncoder(), "IO": IOEncoder(), "BILOU": BILOUEncoder(), "BMES": BMESEncoder(), "BIOES": BIOESEncoder()}
 TAG_COLLAPSE = {"ENG":"BORROWING", "OTHER":"BORROWING"}
-CRF = None
 
 def ingest_json_document(doc_json: Mapping, nlp: Language, include_other: bool) -> Doc:
     if not doc_json["annotation_approver"] and not doc_json["labels"]:
         raise ValueError("Instance is not annotated!")
     else:
         doc = nlp(doc_json["text"])
-        #print(doc)
-        #print(doc_json["id"])
         spans = list()
         for label in doc_json["labels"]:
             if include_other or label[2] != "OTHER":
@@ -239,7 +237,7 @@ def print_statistics(training, test) -> None:
     print(tabulate(table, headers=["", "Training", "Test"]))
 
 def train_predict(train_set, test_set, max_iterations, c1, c2, encoder, window_size) -> None:
-    features = [
+    features = [    PerplexityFeature(WordProbability(PATH_TO_LEXICON_ES)),
                     WordVectorFeatureNerpy(args.embeddings, args.scaling),
                     BiasFeature(),
                     TokenFeature(),
@@ -249,21 +247,26 @@ def train_predict(train_set, test_set, max_iterations, c1, c2, encoder, window_s
                     QuotationFeature(),
                     WordEnding(),
                     POStagFeature(),
-                    WordShapeFeature()
+                    WordShapeFeature(),
                     ]
 
     if args.expanded_features:
-        features.extend([WordProbability_ES("lexicon/spanish_lexicon.csv"),
-                         WordProbability_EN(PATH_TO_DICT_EN),
+        features.extend([WordProbability(PATH_TO_LEXICON_ES),
+                         WordProbability(PATH_TO_DICT_EN),
                          BigramFeature(),
-                         IsInDictEN(PATH_TO_DICT_EN),
-                         IsInDictES(PATH_TO_DICT_ES),
+                         IsInDict(PATH_TO_DICT_EN),
+                         IsInDict(PATH_TO_DICT_ES),
                          GraphotacticFeature(),
                          LemmaFeature(),
                          PunctuationFeature(),
-                         DigitFeature(),
                         SentencePositionFeature(),
-                        BrownClusterFeature()])
+                        BrownClusterFeature(),
+                         HigherEnglishProbability(WordProbability(PATH_TO_DICT_EN),
+                                                  WordProbability(PATH_TO_LEXICON_ES)),
+                         QuatrigramFeature(),
+                         AllCapsFeature(),
+                        DigitFeature(),
+                         ])
 
     crf = CRFsuiteEntityRecognizer(WindowedTokenFeatureExtractor(features,window_size,), ENCODER_DICT[encoder])
     if args.verbose: print("Training...")

@@ -1,43 +1,33 @@
-
-
 from typing import Sequence, Dict, Optional, List
-
 from spacy.tokens import Doc
-#import pymagnitude
 import csv
 from typing import Sequence, Dict, List, NamedTuple, Tuple, Counter
 from utils import FeatureExtractor, ScoringCounts, ScoringEntity
 from spacy.tokens import Span
 from typing import Iterable, Sequence, Tuple, List, Dict
-
 from nltk import ConfusionMatrix
 from spacy.tokens import Span, Doc, Token
-
 from utils import FeatureExtractor, EntityEncoder, PRF1
-
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
 import string
 import frozendict
 from functools import lru_cache
 from nerpy.embeddings import SqliteWordEmbeddings, WordEmbedding
 import time
-
-
 from spacy.tokens import Token
-
 import pycrfsuite
-
 from collections import defaultdict
-
 import sys
 from decimal import ROUND_HALF_UP, Context
-
 import spacy
-
 import numpy as np
 from collections import defaultdict
 from functools import partial
 from gensim.models.keyedvectors import KeyedVectors
+
+PATH_TO_DICT_ES = "lexicon/es.txt"
+PATH_TO_DICT_EN = "lexicon/en.txt"
+PATH_TO_LEXICON_ES = "lexicon/spanish_lexicon.csv"
 
 VECTORS_FOLDER = "embeddings/"
 
@@ -283,11 +273,6 @@ class IsShortWord(FeatureExtractor):
         if len(token)<4:
             features["is_short["+str(relative_idx)+"]"]=1.0
 
-class IsQualWord(FeatureExtractor):
-    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
-        quality_words = ["good", "bad", "terrible", "awful", "nice", "lovely", "great"]
-        if token in quality_words:
-            features["quality_word["+str(relative_idx)+"]"]=1.0
 
 class WordEnding(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
@@ -321,6 +306,11 @@ class DigitFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
         if DIGIT_RE.search(token.text):
             features["digit["+str(relative_idx)+"]"] = 1.0
+
+class AllCapsFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if token.text.isupper():
+            features["isupper["+str(relative_idx)+"]"] = 1.0
 
 class LemmaFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
@@ -404,80 +394,93 @@ class TrigramFeature(FeatureExtractor):
                #print(trigram)
                features["trigram["+str(relative_idx)+"]="+trigram]=1.0
 
+class QuatrigramFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        my_token = token.text
+        if relative_idx == 0 and len(my_token)>=3:
+           for i in range(-1, len(my_token)-1):
+               if i == -1:
+                   quatrigram = "START"+my_token[0]+my_token[1]+my_token[2]
+               if i == len(my_token) - 3:
+                   quatrigram = my_token[len(my_token) - 3]+ my_token[len(my_token) - 2] + my_token[len(my_token) - 1]+"END"
+               if i >= 0 and i < len(my_token) - 3:
+                   quatrigram = my_token[i]+my_token[i+1]+my_token[i+2]+my_token[i+3]
+               #print(trigram)
+               features["quatrigram["+str(relative_idx)+"]="+quatrigram]=1.0
+
 class SentencePositionFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
         if relative_idx == 0:
             if token.i == 0 or (token.i == 1 and tokens[0].is_punct):
                 features["isFirstPosition["+str(relative_idx)+"]="]=1.0
 
-
-
-class IsInDictES(FeatureExtractor):
+# https://github.com/dwyl/english-words/blob/master/words_alpha.txt
+class IsInDict(FeatureExtractor):
     def __init__(self, dict_path: str) -> None:
+        self.lang = "EN" if dict_path == PATH_TO_DICT_EN else "ES"
         with open(dict_path, mode="r", encoding="utf-8") as f:
             self.lemmas = {word.rstrip('\n') for word in f.readlines()}
-            #print(self.lemmas)
 
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
         if relative_idx  == 0:
             if token.lemma_.lower() in self.lemmas:
-                features["is_in_DictES["+str(relative_idx)+"]"]=1.0
+                features["is_in_Dict"+self.lang+"["+str(relative_idx)+"]"]=1.0
 
-# https://github.com/dwyl/english-words/blob/master/words_alpha.txt
-class IsInDictEN(FeatureExtractor):
-    def __init__(self, dict_path: str) -> None:
-        with open(dict_path, mode="r", encoding="utf-8") as f:
-            self.lemmas = {word.rstrip('\n') for word in f.readlines()}
-            #print(self.lemmas)
-
-    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
-        if relative_idx  == 0:
-            if token.text.lower() in self.lemmas:
-                features["is_in_DictEN["+str(relative_idx)+"]"]=1.0
-
-
-class WordProbability_EN(FeatureExtractor):
-    def __init__(self, dict_path: str) -> None:
-        with open(dict_path, mode="r", encoding="utf-8") as f:
-            self.lemmas = {word.rstrip('\n') for word in f.readlines()}
-            self.trigram_counts = defaultdict(lambda: defaultdict(int))
-            self.bigram_counts = defaultdict(int)
-            for lemma in self.lemmas:
-                if len(lemma) > 1:
-                    self.trigram_counts[("START", lemma[0])][lemma[1]] += 1
-                    self.bigram_counts[("START", lemma[0])] += 1
-                    self.trigram_counts[(lemma[-2], lemma[-1])]["END"] += 1
-                    self.bigram_counts[(lemma[-2], lemma[-1])] += 1
-                    for index, letter in enumerate(lemma[1:-1]):
-                        self.trigram_counts[(lemma[index - 1], letter)][lemma[index + 1]] += 1
-                        self.bigram_counts[(lemma[index - 1], letter)] += 1
-                    else:
-                        self.trigram_counts[("START", lemma[0])]["END"] += 1
-                        self.bigram_counts[("START", lemma[0])] += 1
-
-    def get_trigram_prob(self, char0, char1, char2):
-        if self.bigram_counts[(char0, char1)] == 0:
-            return 1e-10
-        return self.trigram_counts[(char0, char1)][char2] / self.bigram_counts[(char0, char1)]
-
-    def get_word_probability(self, word):
-        if len(word) > 1:
-            probability = self.get_trigram_prob("START", word[0], word[1])
-            probability = probability * self.get_trigram_prob(word[-2], word[-1], "END")
-            for index, letter in enumerate(word[1:-1]):
-                probability = probability * self.get_trigram_prob(word[index - 1], letter, word[index + 1])
-        else:
-            probability = self.get_trigram_prob("START", word[0], "END")
-        return probability
+class HigherEnglishProbability(FeatureExtractor):
+    def __init__(self, wordprobabilityEN, wordprobabilityES) -> None:
+        self.word_probability_ES = wordprobabilityES
+        self.word_probability_EN = wordprobabilityEN
 
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
         if relative_idx == 0:
-            features["EN_prob[" + str(relative_idx) + "]"] = self.get_word_probability(token.text.lower())
+            prob_es = self.word_probability_ES.get_word_probability(token.text)
+            prob_en = self.word_probability_EN.get_word_probability(token.text)
+            if prob_en > prob_es:
+                features["EN_prob_is_higher[" + str(relative_idx) + "]"] = 1.0
+
+class PerplexityFeature(FeatureExtractor):
+    def __init__(self, wordprobabilityES) -> None:
+        self.word_probability_ES = wordprobabilityES
+        self.perplexity_dict = defaultdict(lambda: list())
+        self.perplexities = list()
+        for lemma in self.word_probability_ES.lemmas:
+            perplexity = self.get_perplexity(lemma)
+            self.perplexity_dict[perplexity].append(lemma)
+            self.perplexities.append(perplexity)
+
+        self.perplexities = np.array(self.perplexities)
+        self.threashold = np.percentile(self.perplexities, 80)
+        """
+        standard = np.std(self.perplexities)
+        mean = np.average(self.perplexities)
+        floor = mean - standard
+        ceiling = mean + standard
+        for perplexity, words in self.perplexity_dict.items():
+            if perplexity >= floor and perplexity <= ceiling:
+                print(words)
+        """
+    def get_perplexity(self, lemma):
+        l = self.word_probability_ES.get_word_probability(lemma)/len(lemma)
+        return np.power(2, l*(-1))
+
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        perplexity = self.get_perplexity(token.text)
+        if perplexity >= self.threashold:
+            #print(token)
+            #print(perplexity)
+            #print(self.threashold)
+            features["high_perplexity[" + str(relative_idx) + "]"] = 1.0
+
 #https://raw.githubusercontent.com/julox/spanish_lexicon/master/spanish_lexicon.csv
-class WordProbability_ES(FeatureExtractor):
+class WordProbability(FeatureExtractor):
     def __init__(self, dict_path: str) -> None:
         with open(dict_path, mode="r", encoding="utf-8") as f:
-            self.lemmas = {line.split(';')[0][1:-1] for line in f.readlines()[1:]}
+            if dict_path == PATH_TO_LEXICON_ES:
+                self.lemmas = {line.split(';')[0][1:-1] for line in f.readlines()[1:]}
+                self.lang = "ES"
+            else:
+                self.lemmas = {word.rstrip('\n') for word in f.readlines()}
+                self.lang = "EN"
             self.trigram_counts = defaultdict(lambda: defaultdict(int))
             self.bigram_counts = defaultdict(int)
             for lemma in self.lemmas:
@@ -496,21 +499,21 @@ class WordProbability_ES(FeatureExtractor):
     def get_trigram_prob(self, char0, char1, char2):
         if self.bigram_counts[(char0, char1)] == 0:
             return 1e-10
-        return self.trigram_counts[(char0, char1)][char2] / self.bigram_counts[(char0, char1)]
+        return np.log2(self.trigram_counts[(char0, char1)][char2] / self.bigram_counts[(char0, char1)])
 
     def get_word_probability(self, word):
         if len(word) > 1:
             probability = self.get_trigram_prob("START", word[0], word[1])
-            probability = probability * self.get_trigram_prob(word[-2], word[-1], "END")
+            probability = probability + self.get_trigram_prob(word[-2], word[-1], "END")
             for index, letter in enumerate(word[1:-1]):
-                probability = probability * self.get_trigram_prob(word[index - 1], letter, word[index + 1])
+                probability = probability + self.get_trigram_prob(word[index - 1], letter, word[index + 1])
         else:
             probability = self.get_trigram_prob("START", word[0], "END")
         return probability
 
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
-        if relative_idx == 0:
-            features["ES_prob[" + str(relative_idx) + "]"] = self.get_word_probability(token.text.lower())
+        #if relative_idx == 0:
+        features[self.lang +"_prob[" + str(relative_idx) + "]"] = self.get_word_probability(token.text.lower())
 
 class BigramFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
@@ -621,17 +624,6 @@ class WordVectorFeatureNerpy(FeatureExtractor):
 
     def get_keys(self, word_vector):
         return ["v" + str(i) for i in range(len(word_vector))]
-
-    """
-                try:
-                    feature_keys = self._feature_keys_cache[relative_idx]
-                except KeyError:
-                    feature_keys = [
-                        f"{self.FEATURE}[{index}]={i}" for i in range(word_vectors.dim)
-                    ]
-                    self._feature_keys_cache[relative_idx] = feature_keys
-            features.update(zip(feature_keys, self._embedding_cache(norm_text)))  # type: ignore
-    """
 
     def _scaled_word_vector(self, word: str) -> Sequence[float]:
         vec = self.word_vectors[word]
