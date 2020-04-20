@@ -126,6 +126,20 @@ def span_prf1_type_map(
     get_prf1_all(counts, prf1)
     return prf1, ScoringCounts(Counter(tp), Counter(fp), Counter(fn))
 
+def get_ents(
+    docs: Sequence[Doc],
+    type_map: Optional[Mapping[str, str]] = None,
+) -> Dict[str, PRF1]:
+    all_ents = list()
+    for i in range(len(docs)):
+        ents = {ent for ent in docs[i].ents}
+        if type_map is not None:
+            ents = remapping(ents, type_map)  # ugly code, but otherwise the
+        for ent in ents:
+            all_ents.append(ScoringEntity(tuple(ent.text.split()), ent.label_))
+    return all_ents
+
+
 def remapping(ents, type_map):
     new_ents = set()
     for ent in ents:
@@ -285,8 +299,28 @@ def evaluate(predicted, test):
     tag_collapse = None
     if args.collapse_tags:
         tag_collapse = TAG_COLLAPSE
-    prf1 = span_prf1_type_map(test, predicted, tag_collapse)
-    return prf1
+    prf1, scores = span_prf1_type_map(test, predicted, tag_collapse)
+    return prf1, scores
+
+def print_entity_report(training, predictions):
+    training_ents = get_ents(training)
+    true_positive = list(predictions.true_positives.elements())
+    #tp_unseen = true_positive - training_ents
+    tp_unseen = [ent for ent in true_positive if ent not in training_ents]
+    print("TP previously not seen: " + str(len(tp_unseen)) + " out of " + str(len(true_positive)))
+    print(tp_unseen)
+
+    false_negatives = list(predictions.false_negatives.elements())
+    fn_unseen = [ent for ent in false_negatives if ent not in training_ents]
+    #fn_unseen = false_negatives - training_ents
+    print("FN previously not seen: " + str(len(fn_unseen)) + " out of " + str(len(false_negatives)))
+    print(fn_unseen)
+
+    false_positives = list(predictions.false_positives.elements())
+    #fp_unseen = false_positives - training_ents
+    fp_unseen = [ent for ent in false_positives if ent not in training_ents]
+    print("FP previously not seen: " + str(len(fp_unseen)) + " out of " + str(len(false_positives)))
+    print(fp_unseen)
 
 if __name__ == "__main__":
 
@@ -305,5 +339,7 @@ if __name__ == "__main__":
     prf1, predictions = evaluate(predicted, test)
     if args.verbose:
         print(predictions)
+        print_entity_report(training, predictions)
     print_results(prf1)
+
     #print(span_scoring_counts(test, predicted))
