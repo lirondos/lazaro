@@ -10,6 +10,7 @@ numpy>=1.15.0
 six
 gensim
 frozendict
+newspaper3k
 
 # Development
 #black
