@@ -5,7 +5,7 @@ from typing import Mapping, Sequence, Dict, Optional, List, NamedTuple, Tuple, C
 import csv
 #from utils import FeatureExtractor, ScoringCounts, ScoringEntity
 
-from nltk import ConfusionMatrix
+#from nltk import ConfusionMatrix
 from spacy.tokens import Span, Doc, Token
 from spacy.language import Language
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
@@ -132,11 +132,11 @@ def get_ents(
 ) -> Dict[str, PRF1]:
     all_ents = list()
     for i in range(len(docs)):
-        ents = {ent for ent in docs[i].ents}
+        ents = [ent.text.lower() for ent in docs[i].ents]
         if type_map is not None:
             ents = remapping(ents, type_map)  # ugly code, but otherwise the
         for ent in ents:
-            all_ents.append(ScoringEntity(tuple(ent.text.split()), ent.label_))
+            all_ents.append(ent)
     return all_ents
 
 
@@ -251,7 +251,7 @@ def print_statistics(training, test) -> None:
     print(tabulate(table, headers=["", "Training", "Test"]))
 
 def train_predict(train_set, test_set, max_iterations, c1, c2, encoder, window_size) -> None:
-    features = [    PerplexityFeature(WordProbability(PATH_TO_LEXICON_ES)),
+    features = [
                     WordVectorFeatureNerpy(args.embeddings, args.scaling),
                     BiasFeature(),
                     TokenFeature(),
@@ -265,7 +265,8 @@ def train_predict(train_set, test_set, max_iterations, c1, c2, encoder, window_s
                     ]
 
     if args.expanded_features:
-        features.extend([WordProbability(PATH_TO_LEXICON_ES),
+        features.extend([PerplexityFeature(WordProbability(PATH_TO_LEXICON_ES)),
+                         WordProbability(PATH_TO_LEXICON_ES),
                          WordProbability(PATH_TO_DICT_EN),
                          BigramFeature(),
                          IsInDict(PATH_TO_DICT_EN),
@@ -303,22 +304,26 @@ def evaluate(predicted, test):
     return prf1, scores
 
 def print_entity_report(training, predictions):
-    training_ents = get_ents(training)
-    true_positive = list(predictions.true_positives.elements())
-    #tp_unseen = true_positive - training_ents
-    tp_unseen = [ent for ent in true_positive if ent not in training_ents]
+    training_ents = set(get_ents(training))
+    true_positive = {" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.true_positives.elements())}
+    #true_positive = list(predictions.true_positives.elements())
+    tp_unseen = true_positive - training_ents
+    #tp_unseen = {ent for ent in true_positive if ent not in training_ents]
     print("TP previously not seen: " + str(len(tp_unseen)) + " out of " + str(len(true_positive)))
     print(tp_unseen)
 
-    false_negatives = list(predictions.false_negatives.elements())
-    fn_unseen = [ent for ent in false_negatives if ent not in training_ents]
-    #fn_unseen = false_negatives - training_ents
+    false_negatives = {" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.false_negatives.elements())}
+    #false_negatives = list(predictions.false_negatives.elements())
+    #fn_unseen = {ent for ent in false_negatives if ent not in training_ents]
+    fn_unseen = false_negatives - training_ents
     print("FN previously not seen: " + str(len(fn_unseen)) + " out of " + str(len(false_negatives)))
     print(fn_unseen)
 
-    false_positives = list(predictions.false_positives.elements())
-    #fp_unseen = false_positives - training_ents
-    fp_unseen = [ent for ent in false_positives if ent not in training_ents]
+    false_positives = {" ".join(scoring_entity.tokens).lower() for scoring_entity in
+                       list(predictions.false_positives.elements())}
+    #false_positives = list(predictions.false_positives.elements())
+    fp_unseen = false_positives - training_ents
+    #fp_unseen = {ent for ent in false_positives if ent not in training_ents]
     print("FP previously not seen: " + str(len(fp_unseen)) + " out of " + str(len(false_positives)))
     print(fp_unseen)
 
@@ -340,6 +345,5 @@ if __name__ == "__main__":
     if args.verbose:
         print(predictions)
         print_entity_report(training, predictions)
-    print_results(prf1)
 
     #print(span_scoring_counts(test, predicted))
