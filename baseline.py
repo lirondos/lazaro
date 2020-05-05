@@ -48,7 +48,7 @@ parser.add_argument('--encoder', type=str, default='BIO', help = 'Encoding to be
 parser.add_argument('--window', type=int, default=2, help = 'Window size to be considered (default 2)')
 parser.add_argument('--embeddings', type=str, default="w2v_SBWC", help = 'Embeddings to be used: w2v_SBWC, glove_SBWC, fasttext_SBWC, fasttext_SUC, fasttext_wiki, spacy (default is spacy)')
 parser.add_argument('--scaling', type=float, default=0.5, help = 'Scaling for word emebeddings (default 1.0)')
-parser.add_argument('--verbose',type=bool, default=False, help='Prints list of false positives, true positives and false negatives (default False)')
+parser.add_argument('--verbose',type=bool, default=True, help='Prints list of false positives, true positives and false negatives (default False)')
 parser.add_argument('--stats',type=bool, default=False, help='Print corpus numbers (number of tokens, anglicisms, headlines, etc)  (default False)')
 parser.add_argument('--include_other',type=bool, default=False, help='Whether to include OTHER tag  (default False)')
 parser.add_argument('--collapse_tags',type=bool, default=False, help='Whether to collapse ENGLISH and OTHER tags into a single LOANWORD tag  (default True)')
@@ -304,21 +304,22 @@ def evaluate(predicted, test):
     return prf1, scores
 
 def print_entity_report(training, predictions):
-    training_ents = set(get_ents(training))
-    true_positive = {" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.true_positives.elements())}
-    #true_positive = list(predictions.true_positives.elements())
-    tp_unseen = true_positive - training_ents
-    #tp_unseen = {ent for ent in true_positive if ent not in training_ents]
+    #training_ents = set(get_ents(training))
+    training_ents = get_ents(training)
+    #true_positive = {" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.true_positives.elements())}
+    true_positive = [" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.true_positives.elements())]
+    #tp_unseen = true_positive - training_ents
+    tp_unseen = [ent for ent in true_positive if ent not in training_ents]
     print("TP previously not seen: " + str(len(tp_unseen)) + " out of " + str(len(true_positive)))
     print(tp_unseen)
 
-    false_negatives = {" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.false_negatives.elements())}
-    #false_negatives = list(predictions.false_negatives.elements())
-    #fn_unseen = {ent for ent in false_negatives if ent not in training_ents]
-    fn_unseen = false_negatives - training_ents
+    #false_negatives = {" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.false_negatives.elements())}
+    false_negatives = [" ".join(scoring_entity.tokens).lower() for scoring_entity in list(predictions.false_negatives.elements())]
+    fn_unseen = [ent for ent in false_negatives if ent not in training_ents]
+    #fn_unseen = false_negatives - training_ents
     print("FN previously not seen: " + str(len(fn_unseen)) + " out of " + str(len(false_negatives)))
     print(fn_unseen)
-
+    """
     false_positives = {" ".join(scoring_entity.tokens).lower() for scoring_entity in
                        list(predictions.false_positives.elements())}
     #false_positives = list(predictions.false_positives.elements())
@@ -326,7 +327,7 @@ def print_entity_report(training, predictions):
     #fp_unseen = {ent for ent in false_positives if ent not in training_ents]
     print("FP previously not seen: " + str(len(fp_unseen)) + " out of " + str(len(false_positives)))
     print(fp_unseen)
-
+    """
 if __name__ == "__main__":
 
     args = parser.parse_args()
@@ -334,6 +335,8 @@ if __name__ == "__main__":
     if args.verbose: print(args)
     if args.verbose: print("Loading data...")
     training = load_data(args.train_file, args.include_other)
+    ents = get_ents(training)
+    print(Counter(ents))
     if args.verbose: print("Data loaded!")
 
     test = load_data(args.test_file, args.include_other)
