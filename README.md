@@ -11,5 +11,8 @@ This repo contains:
 
 For more information please check: 
 *An Annotated Corpus of Emerging Anglicisms in Spanish Newspaper Headlines*
-Paper to be presented at the 4th Workshop on Computational Approaches to Linguistic Code-Switching (colocated with LREC 2020) https://arxiv.org/abs/2004.02929
+Proceedings of the 4th Workshop on Computational Approaches to Linguistic Code-Switching (colocated with LREC 2020) https://arxiv.org/abs/2004.02929
 
+*Lázaro: An Extractor of Emergent Anglicisms in Spanish Newswire*
+MS thesis in Computational Linguistics, Department of Computer Science, Brandeis University
+https://lirondos.github.io/publication/lazaro/
