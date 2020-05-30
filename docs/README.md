@@ -1,4 +1,4 @@
-# lazaro
+# lázaro
 Lázaro is a model for extracting English lexical borrowings (or *anglicisms*) from Spanish newswire. 
 
 * The conditional random field model and annotated corpus for automatic extraction of anglicisms in Spanish newswire can be found [in the GitHub repo](https://github.com/lirondos/lazaro).
