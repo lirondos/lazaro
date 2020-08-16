@@ -1,0 +1,11 @@
+# ignore jsonl files automatically annotated
+*_revised.jsonl
+*errors.jsonl
+*.log
+secret.py
+automatically_annotated/**
+indices/**
+embeddings/**
+embeddings_db/**
+tobepredicted/**
+tobetweeted/**
