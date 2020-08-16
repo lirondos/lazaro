@@ -1,15 +1,14 @@
-# lazaro
-An annotated corpus and CRF model for automatic extraction of anglicisms in Spanish newswire. 
+# Lázaro
+Lazaro es un modelo que detecta posibles extranjerismos (fundamentalmente anglicismos) en la prensa en español. Lázaro analiza a diario la prensa española y extrae los anglicisimos aparecidos en las noticias del día. Actualmente Lázaro analiza los artículos publicados en ochos medios españoles: elDiario.es, El País, El Mundo, ABC, La Vanguardia, El Confidencial, 20minutos y EFE. Los anglicismos nuevos (es decir, aquellos que Lázaro no ha visto previamente) son tuiteados por el bot de Twitter [@lazarobot](https://twitter.com/lazarobot). Asimismo, cada domingo [@lazarobot](https://twitter.com/lazarobot) publica el _ranking_ con los diez anglicismos más frecuentes de la semana. 
 
-This repo contains:
-1. A corpus of 21,570 newspaper headlines written in European Spanish annotated with emergent anglicisms (see ```data``` folder). The headlines were extracted from the Spanish newspaper [eldiario.es](https://www.eldiario.es/).
-2. A Conditional Random Field baseline model for anglicism extraction.
+El modelo de extracción de anglicismos de Lázaro es un CRF (_Conditional Random Field_). Se puede encontrar más información sobre el modelo y del corpus de entrenamiento en los siguientes recursos:
+[_An Annotated Corpus of Emerging Anglicisms in Spanish Newspaper Headlines_](https://www.aclweb.org/anthology/2020.calcs-1.1/).
+[_Lázaro: An Extractor of Emergent Anglicisms in Spanish Newswire_](http://bir.brandeis.edu/handle/10192/37532).
 
-* ```baseline.py``` runs the model. 
-* ```utils.py``` y ```utils2.py``` contain the auxiliary classes for the model (encoder, feature extractor, etc).
-* ```data``` contains the corpus: training set, dev set, test set and supplemental test set. 
+* El fichero ```crf.py``` es el script que ejecuta el meollo del modelo (lectura de datos, entrenamiento del modelo y predicción). 
+* Los ficheros  ```utils.py``` y ```utils2.py``` contienen las clases auxiliares del modelo.
+* El fichero ```rss.py``` se encarga de la recolección diaria de noticias desde los feeds de RSS. 
+* El fichero ```tweet.py``` se encarga de tuitear los anglicismos encontrados. 
+* La carpeta ```corpus``` contiene el corpus de entrenamiento del modelo. 
 
-For more information please check: 
-*An Annotated Corpus of Emerging Anglicisms in Spanish Newspaper Headlines*, Proceedings of the 4th Workshop on Computational Approaches to Linguistic Code-Switching (colocated with LREC 2020) https://arxiv.org/abs/2004.02929
-
-*Lázaro: An Extractor of Emergent Anglicisms in Spanish Newswire*, MS thesis in Computational Linguistics, Department of Computer Science, Brandeis University https://lirondos.github.io/publication/lazaro/
+El nombre tanto del bot como del modelo es un pequeño guiño al filólogo español [Lázaro Carreter](https://es.wikipedia.org/wiki/Fernando_L%C3%A1zaro_Carreter), cuyas columnas sobre prescripción lingüística en los medios de comunicación fueron muy populares entre años 80 y 90. 
