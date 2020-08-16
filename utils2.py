@@ -12,7 +12,7 @@ from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
 import string
 import frozendict
 from functools import lru_cache
-from nerpy.embeddings import SqliteWordEmbeddings, WordEmbedding
+from quickvec.embedding import SqliteWordEmbedding, WordEmbedding
 import time
 from spacy.tokens import Token
 import pycrfsuite
@@ -23,14 +23,13 @@ import spacy
 import numpy as np
 from collections import defaultdict
 from functools import partial
-from gensim.models.keyedvectors import KeyedVectors
 
 PATH_TO_DICT_ES = "lexicon/es.txt"
 PATH_TO_DICT_EN = "lexicon/en.txt"
 PATH_TO_LEXICON_ES = "lexicon/spanish_lexicon.csv"
 
-VECTORS_FOLDER = "embeddings/"
-
+VECTORS_FOLDER = "lazarobot/embeddings_db/"
+#VECTORS_FOLDER = "embeddings_db/"
 VECTORS_PATH = {"fasttext_SUC": "embeddings-l-model.vec",
                 "fasttext_wiki": "wiki.es.vec",
                 "w2v_SBWC" : "SBW-vectors-300-min5.txt",
@@ -285,6 +284,21 @@ class TitlecaseFeature(FeatureExtractor):
         if token.text.istitle():
             features["titlecase["+str(relative_idx)+"]"]=1.0
 
+class URLFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0 and token.like_url:
+            features["URL["+str(relative_idx)+"]"]=1.0
+
+class EmailFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0 and token.like_email:
+            features["email["+str(relative_idx)+"]"]=1.0
+
+class TwitterFeature(FeatureExtractor):
+    def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
+        if relative_idx == 0 and (token.text[0] == "#" or token.text[0] == "@"):
+            features["twitter["+str(relative_idx)+"]"]=1.0
+
 
 class InitialTitlecaseFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
@@ -299,7 +313,7 @@ class PunctuationFeature(FeatureExtractor):
 
 class QuotationFeature(FeatureExtractor):
     def extract(self, token: str, current_idx: int, relative_idx: int, tokens: Sequence[str], features: Dict[str, float]):
-        if token.text in ["\"", "\'"]:
+        if token.text in ["\"", "\'", "«", "“", "‘"]:
             features["quot["+str(relative_idx)+"]"] = 1.0
 
 class DigitFeature(FeatureExtractor):
@@ -588,9 +602,12 @@ class WordVectorFeatureNerpy(FeatureExtractor):
         self.vectors_id = vectors
         self.scale = scaling
         if self.vectors_id != "spacy":
-            path_to_vectors = VECTORS_FOLDER + VECTORS_PATH[vectors]
-            self.word_vectors = SqliteWordEmbeddings.from_text_format(path_to_vectors, "embeddings_db/" + str(time.time()) + "embeddings.db")
+            path_to_vectors_db = VECTORS_FOLDER + vectors + ".db"
+            #self.word_vectors = SqliteWordEmbeddings.from_text_format(path_to_vectors, "lazarobot/embeddings_db/" + str(time.time()) + "embeddings.db")
+            #self.word_vectors = SqliteWordEmbedding.from_text_format(path_to_vectors, "embeddings_db/embeddings.db")
             #self.wordvectors = KeyedVectors.load_word2vec_format(path_to_vectors)
+            self.word_vectors = SqliteWordEmbedding.from_db(path_to_vectors_db)
+            """
             self._feature_keys_cache: Dict[int, List[str]] = {}
             # Store normalized form or None to indicate no match
             self._word_casing: Dict[str, Optional[str]] = {}
@@ -601,6 +618,7 @@ class WordVectorFeatureNerpy(FeatureExtractor):
                 if self.scale == 1.0
                 else self._scaled_word_vector
             )
+            """
 
 
     def extract(
@@ -616,7 +634,8 @@ class WordVectorFeatureNerpy(FeatureExtractor):
                 word_vector = token.vector
             else:
                 try:
-                    word_vector = self._embedding_cache(token.text.lower())
+                    #word_vector = self._embedding_cache(token.text.lower())
+                    word_vector = self.word_vectors[token.text.lower()]
                 except KeyError:
                     word_vector = np.zeros(self.word_vectors.dim)
             keys = self.get_keys(word_vector)

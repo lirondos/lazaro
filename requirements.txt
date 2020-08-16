@@ -1,4 +1,5 @@
 # Dependencies
+#Python 3.7.4
 spacy==2.2.2
 python-crfsuite==0.9.6
 nltk==3.4.5
@@ -11,6 +12,15 @@ six
 gensim
 frozendict
 newspaper3k
+tweepy
+furl
+pandas
+pip install git+https://github.com/ConstantineLignos/quickvec.git
+emoji
+textblob
+googletrans
+mysql # required by pattern
+pattern
 
 # Development
 #black
