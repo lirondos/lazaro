@@ -15,7 +15,8 @@ newspaper3k
 tweepy
 furl
 pandas
-quickvec
+#quickvec
+python -m pip install git+https://github.com/ConstantineLignos/quickvec.git
 #pip install git+https://github.com/ConstantineLignos/quickvec.git
 emoji
 textblob
