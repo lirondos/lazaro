@@ -21,7 +21,7 @@ from spacy.language import Language
 from spacy.tokenizer import Tokenizer
 #from textblob import TextBlob
 from googletrans import Translator
-from utils.constants import ARTICLES_INDEX, INDICES_FOLDER
+from ..utils.constants import ARTICLES_INDEX, INDICES_FOLDER
 
 #ALREADY_SEEN_CSV = "lazarobot/articles_index.csv"
 NLP = spacy.load('es_core_news_md', disable=["ner"])
