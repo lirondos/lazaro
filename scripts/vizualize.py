@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 from datetime import datetime, timedelta
 from collections import Counter
 import sys
-sys.path.append(PATH_TO_UTILS)
+sys.path.append("~/lazaro/utils/")
 from constants import ANGLICISM_INDEX, ARTICLES_INDEX, TO_BE_TWEETED_PATTERN
 
 
