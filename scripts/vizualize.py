@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from collections import Counter
 import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
-from constants import ANGLICISM_INDEX, ARTICLES_INDEX, TO_BE_TWEETED_PATTERN
+from constants import ANGLICISM_INDEX, ARTICLES_INDEX, TO_BE_TWEETED_PATTERN, PATH_TO_VIZ
 
 
 pd.options.plotting.backend = "plotly"
@@ -61,7 +61,7 @@ def get_table_ultimos_angl(my_title):
     ])
     arranged_title = TITLES[my_title][0] + "<br><small>" + TITLES[my_title][1] + "</small>"
     fig.update_layout(title_text="Últimos anglicismos registrados")
-    with open(my_title+'.html', 'w') as f:
+    with open(PATH_TO_VIZ + my_title+'.html', 'w') as f:
         f.write(fig.to_html(include_plotlyjs='cdn'))
 
 
