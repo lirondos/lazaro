@@ -1,5 +1,7 @@
 ANGLICISM_INDEX = "/home/ealvarezmellado/lazaro/data/anglicisms_index.csv"
 ARTICLES_INDEX = "/home/ealvarezmellado/lazaro/data/articles_index.csv"
+VECTORS_FOLDER = "/home/ealvarezmellado/lazaro/embeddings_db/"
+
 
 AUTOMATICALLY_ANNOTATED_FOLDER = "/home/ealvarezmellado/lazaro/automatically_annotated/"
 TO_BE_PREDICTED_FOLDER = "/home/ealvarezmellado/lazaro/tobepredicted/"

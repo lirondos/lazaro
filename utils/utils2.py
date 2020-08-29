@@ -24,11 +24,13 @@ import numpy as np
 from collections import defaultdict
 from functools import partial
 
+sys.path.append("/home/ealvarezmellado/lazaro/utils/")
+from constants import VECTORS_FOLDER
+
 PATH_TO_DICT_ES = "lexicon/es.txt"
 PATH_TO_DICT_EN = "lexicon/en.txt"
 PATH_TO_LEXICON_ES = "lexicon/spanish_lexicon.csv"
 
-VECTORS_FOLDER = "lazarobot/embeddings_db/"
 #VECTORS_FOLDER = "embeddings_db/"
 VECTORS_PATH = {"fasttext_SUC": "embeddings-l-model.vec",
                 "fasttext_wiki": "wiki.es.vec",
