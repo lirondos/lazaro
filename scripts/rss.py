@@ -21,7 +21,9 @@ from spacy.language import Language
 from spacy.tokenizer import Tokenizer
 #from textblob import TextBlob
 from googletrans import Translator
-from ..utils import constants
+
+
+from lazaro.utils import constants
 from constants import ARTICLES_INDEX, INDICES_FOLDER
 
 #ALREADY_SEEN_CSV = "lazarobot/articles_index.csv"
