@@ -24,7 +24,7 @@ from googletrans import Translator
 import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 #from lazaro import utils
-from constants import ARTICLES_INDEX, INDICES_FOLDER
+from constants import ARTICLES_INDEX, INDICES_FOLDER, TO_BE_PREDICTED_FOLDER
 
 #ALREADY_SEEN_CSV = "lazarobot/articles_index.csv"
 NLP = spacy.load('es_core_news_md', disable=["ner"])
