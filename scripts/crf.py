@@ -16,7 +16,6 @@ import codecs
 from decimal import ROUND_HALF_UP, Context
 from statistics import mean
 import spacy
-from utils import PRF1
 import json
 import random
 import copy
@@ -37,6 +36,7 @@ from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature
 from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder
 from constants import ANGLICISM_INDEX, TO_BE_TWEETED_PATTERN, AUTOMATICALLY_ANNOTATED_FOLDER, TO_BE_PREDICTED_FOLDER
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
+from utils import PRF1
 
 KFOLD = 10
 NLP = spacy.load('es_core_news_md', disable=["ner"])
