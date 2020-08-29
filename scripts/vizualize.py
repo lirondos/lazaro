@@ -25,7 +25,7 @@ MEDIOS = {"elconfidencial" : "El Confidencial",
 
 TITLES = {"top20": ("Anglicismos más frecuentes", "Evolución de la frecuencia de los 20 anglicismos más frecuentes"),
            "crecientes": ("Anglicismos que más crecen", "Anglicismos que más crecieron la semana pasada"),
-           "latest": ("Últimas incorporaciones", "Anglicismos registrados por primera vez esta semana")}
+           "latest": ("Últimas incorporaciones. Anglicismos registrados por primera vez esta semana")}
 
 #ANGLICISM_INDEX = "lazarobot/anglicisms_index.csv"
 #ARTICLES_INDEX = "articles_index.csv"
@@ -59,7 +59,7 @@ def get_table_ultimos_angl(my_title):
         cells=dict(values=[mydf.borrowing, mydf.context, mydf.link, mydf.date],
                    align='left'))
     ])
-    arranged_title = TITLES[my_title][0] + "<br><p>" + TITLES[my_title][1] + "</p>"
+    arranged_title = TITLES[my_title][0] + "<br>" + TITLES[my_title][1]
     fig.update_layout(title_text="Últimos anglicismos registrados")
     with open(PATH_TO_VIZ + my_title+'.html', 'w') as f:
         f.write(fig.to_html(include_plotlyjs='cdn'))
@@ -100,7 +100,7 @@ def build_graph(dataframe, list_of_words, since_week, my_title):
     fig.update_traces(mode="markers+lines")
     fig.update_layout(legend_title_text='Palabra')
 
-    arranged_title = TITLES[my_title][0] + "<br><p>" + TITLES[my_title][1] + "</p>"
+    arranged_title = TITLES[my_title][0] + "<br>" + TITLES[my_title][1]
 
     #layout = dict(updatemenus=updatemenus, title='Linear scale')
     fig2 = go.Figure(fig)
