@@ -15,11 +15,11 @@ newspaper3k
 tweepy
 furl
 pandas
-#pip install git+https://github.com/ConstantineLignos/quickvec.git
+#pip install git+https://github.com/ConstantineLignos/quickvec.git #install separately
 emoji
 textblob
 googletrans
-mysql # required by pattern
+mysql # install via conda install. required by pattern
 pattern
 
 # Development
