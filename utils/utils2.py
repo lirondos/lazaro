@@ -604,7 +604,6 @@ class WordVectorFeatureNerpy(FeatureExtractor):
         self.vectors_id = vectors
         self.scale = scaling
         if self.vectors_id != "spacy":
-            print(VECTORS_FOLDER + vectors + ".db")
             path_to_vectors_db = VECTORS_FOLDER + vectors + ".db"
             #self.word_vectors = SqliteWordEmbeddings.from_text_format(path_to_vectors, "lazarobot/embeddings_db/" + str(time.time()) + "embeddings.db")
             #self.word_vectors = SqliteWordEmbedding.from_text_format(path_to_vectors, "embeddings_db/embeddings.db")
