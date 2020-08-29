@@ -5,7 +5,7 @@ import tweepy
 import emoji
 from pattern.en import singularize
 import sys
-sys.path.append("~/lazaro/utils/")
+sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from constants import ANGLICISM_INDEX, ARTICLES_INDEX
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)

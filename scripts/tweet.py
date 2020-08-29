@@ -6,7 +6,7 @@ from secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
 import random
 from nltk.stem import PorterStemmer
 import sys
-sys.path.append("~/lazaro/utils/")
+sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from constants import TO_BE_TWEETED_PATTERN
 
 

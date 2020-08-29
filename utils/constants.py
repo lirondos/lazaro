@@ -1,10 +1,10 @@
-ANGLICISM_INDEX = "~/lazaro/data/anglicisms_index.csv"
-ARTICLES_INDEX = "~/lazaro/data/articles_index.csv"
+ANGLICISM_INDEX = "/home/ealvarezmellado/lazaro/data/anglicisms_index.csv"
+ARTICLES_INDEX = "/home/ealvarezmellado/lazaro/data/articles_index.csv"
 
-AUTOMATICALLY_ANNOTATED_FOLDER = "~/lazaro/automatically_annotated/"
-TO_BE_PREDICTED_FOLDER = "~/lazaro/tobepredicted/"
-INDICES_FOLDER = "~/lazaro/indices/"
-PATH_TO_UTILS = "~/lazaro/utils/"
+AUTOMATICALLY_ANNOTATED_FOLDER = "/home/ealvarezmellado/lazaro/automatically_annotated/"
+TO_BE_PREDICTED_FOLDER = "/home/ealvarezmellado/lazaro/tobepredicted/"
+INDICES_FOLDER = "/home/ealvarezmellado/lazaro/indices/"
+PATH_TO_UTILS = "/home/ealvarezmellado/lazaro/utils/"
 
-TO_BE_TWEETED_PATTERN = "~/lazaro/tobetweeted/tobetweeted_"
+TO_BE_TWEETED_PATTERN = "/home/ealvarezmellado/lazaro/tobetweeted/tobetweeted_"
 
