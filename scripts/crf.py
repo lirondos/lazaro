@@ -34,7 +34,7 @@ import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature, TrigramFeature, QuotationFeature, WordEnding, POStagFeature, WordVectorFeature, WordShapeFeature, WordVectorFeatureSpacy, BigramFeature, IsInDict, GraphotacticFeature, LemmaFeature, DigitFeature, PunctuationFeature, WordVectorFeatureNerpy, WordProbability, WordVectorFeatureNorm, SentencePositionFeature, BrownClusterFeature, HigherEnglishProbability, QuatrigramFeature, AllCapsFeature, PerplexityFeature, URLFeature, EmailFeature, TwitterFeature
 from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder
-from constants import ANGLICISM_INDEX, TO_BE_TWEETED_PATTERN, AUTOMATICALLY_ANNOTATED_FOLDER, TO_BE_PREDICTED_FOLDER
+from constants import ANGLICISM_INDEX, TO_BE_TWEETED_PATTERN, AUTOMATICALLY_ANNOTATED_FOLDER, TO_BE_PREDICTED_FOLDER, CORPUS
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
 from utils import PRF1
 
@@ -46,7 +46,7 @@ TODAY = datetime.now(timezone.utc).strftime('%d%m%Y')
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('--train_folder', type=str, help='Path to file with training data', default="lazarobot/corpus")
+parser.add_argument('--train_folder', type=str, help='Path to file with training data', default=CORPUS)
 parser.add_argument('--val_folder', type=str, help='Path to file with validation data', default=None)
 parser.add_argument('--cross_validation', type=bool, help='Path to file with validation data', default=False)
 parser.add_argument('--max_iterations', type=int, default=None, help='Max interations (default None)')
