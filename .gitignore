@@ -9,3 +9,4 @@ embeddings/**
 embeddings_db/**
 tobepredicted/**
 tobetweeted/**
+.idea/**
