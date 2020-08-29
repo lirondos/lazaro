@@ -25,7 +25,7 @@ MEDIOS = {"elconfidencial" : "El Confidencial",
 
 TITLES = {"top20": ("Anglicismos más frecuentes", "Evolución de la frecuencia de los 20 anglicismos más frecuentes"),
            "crecientes": ("Anglicismos que más crecen", "Anglicismos que más crecieron la semana pasada"),
-           "latest": ("Últimas incorporaciones", "Últimos anglicismos registrados por primera vez"}
+           "latest": ("Últimas incorporaciones", "Últimos anglicismos registrados por primera vez")}
 
 #ANGLICISM_INDEX = "lazarobot/anglicisms_index.csv"
 #ARTICLES_INDEX = "articles_index.csv"
