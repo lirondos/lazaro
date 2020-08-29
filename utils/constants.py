@@ -4,6 +4,7 @@ ARTICLES_INDEX = "~/lazaro/data/articles_index.csv"
 AUTOMATICALLY_ANNOTATED_FOLDER = "~/lazaro/automatically_annotated/"
 TO_BE_PREDICTED_FOLDER = "~/lazaro/tobepredicted/"
 INDICES_FOLDER = "~/lazaro/indices/"
+PATH_TO_UTILS = "~/lazaro/utils/"
 
 TO_BE_TWEETED_PATTERN = "~/lazaro/tobetweeted/tobetweeted_"
 

@@ -6,7 +6,9 @@ import plotly
 import plotly.graph_objs as go
 from datetime import datetime, timedelta
 from collections import Counter
-from utils.constants import ANGLICISM_INDEX, ARTICLES_INDEX, TO_BE_TWEETED_PATTERN
+import sys
+sys.path.append(PATH_TO_UTILS)
+from constants import ANGLICISM_INDEX, ARTICLES_INDEX, TO_BE_TWEETED_PATTERN
 
 
 pd.options.plotting.backend = "plotly"

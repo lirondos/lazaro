@@ -21,8 +21,10 @@ from spacy.language import Language
 from spacy.tokenizer import Tokenizer
 #from textblob import TextBlob
 from googletrans import Translator
-from utils import constants
-from utils.constants import ARTICLES_INDEX, INDICES_FOLDER
+import sys
+sys.path.append(PATH_TO_UTILS)
+#from lazaro import utils
+from constants import ARTICLES_INDEX, INDICES_FOLDER
 
 #ALREADY_SEEN_CSV = "lazarobot/articles_index.csv"
 NLP = spacy.load('es_core_news_md', disable=["ner"])

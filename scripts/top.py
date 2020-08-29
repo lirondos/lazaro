@@ -4,7 +4,9 @@ from secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
 import tweepy
 import emoji
 from pattern.en import singularize
-from utils.constants import ANGLICISM_INDEX, ARTICLES_INDEX
+import sys
+sys.path.append(PATH_TO_UTILS)
+from constants import ANGLICISM_INDEX, ARTICLES_INDEX
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(KEY, SECRET)
