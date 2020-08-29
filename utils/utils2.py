@@ -609,7 +609,7 @@ class WordVectorFeatureNerpy(FeatureExtractor):
             #self.word_vectors = SqliteWordEmbeddings.from_text_format(path_to_vectors, "lazarobot/embeddings_db/" + str(time.time()) + "embeddings.db")
             #self.word_vectors = SqliteWordEmbedding.from_text_format(path_to_vectors, "embeddings_db/embeddings.db")
             #self.wordvectors = KeyedVectors.load_word2vec_format(path_to_vectors)
-            self.word_vectors = SqliteWordEmbedding.from_db(path_to_vectors_db)
+            self.word_vectors = SqliteWordEmbedding.open(path_to_vectors_db)
             """
             self._feature_keys_cache: Dict[int, List[str]] = {}
             # Store normalized form or None to indicate no match
