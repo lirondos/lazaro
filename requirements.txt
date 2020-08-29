@@ -21,6 +21,7 @@ textblob
 googletrans
 mysql # install via conda install. required by pattern
 pattern
+plotly
 
 # Development
 #black

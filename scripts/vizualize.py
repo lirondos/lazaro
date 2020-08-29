@@ -118,7 +118,7 @@ def build_graph(dataframe, list_of_words, since_week, my_title):
                           )])
     # fig = px.scatter(df, x="my_week", y="freq", color='borrowing', mode='lines+markers')
     #fig2.show()
-    with open(my_title+'.html', 'w') as f:
+    with open(PATH_TO_VIZ + my_title + '.html', 'w') as f:
         f.write(fig2.to_html(include_plotlyjs='cdn'))
 
 
