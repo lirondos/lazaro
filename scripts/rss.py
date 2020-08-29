@@ -22,7 +22,7 @@ from spacy.tokenizer import Tokenizer
 #from textblob import TextBlob
 from googletrans import Translator
 import sys
-sys.path.append("~/lazaro/utils/")
+sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 #from lazaro import utils
 from constants import ARTICLES_INDEX, INDICES_FOLDER
 
