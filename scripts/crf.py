@@ -57,11 +57,11 @@ parser.add_argument('--encoder', type=str, default='BIO', help = 'Encoding to be
 parser.add_argument('--window', type=int, default=2, help = 'Window size to be considered (default 2)')
 parser.add_argument('--embeddings', type=str, default="w2v_SBWC", help = 'Embeddings to be used: w2v_SBWC, glove_SBWC, fasttext_SBWC, fasttext_SUC, fasttext_wiki, spacy (default is spacy)')
 parser.add_argument('--scaling', type=float, default=0.5, help = 'Scaling for word emebeddings (default 1.0)')
-parser.add_argument('--verbose',type=bool, default=False, help='Prints list of false positives, true positives and false negatives (default False)')
-parser.add_argument('--stats',type=bool, default=False, help='Print corpus numbers (number of tokens, anglicisms, headlines, etc)  (default False)')
-parser.add_argument('--include_other',type=bool, default=True, help='Whether to include OTHER tag  (default False)')
-parser.add_argument('--collapse_tags',type=bool, default=False, help='Whether to collapse ENGLISH and OTHER tags into a single LOANWORD tag  (default True)')
-parser.add_argument('--expanded_features', type=bool, default=False, help = 'Include expanded features (default False)')
+parser.add_argument('--verbose', action='store_true', help='Prints list of false positives, true positives and false negatives (default False)')
+parser.add_argument('--stats', action='store_true', default=False, help='Print corpus numbers (number of tokens, anglicisms, headlines, etc)  (default False)')
+parser.add_argument('--include_other', action='store_true', default=True, help='Whether to include OTHER tag  (default False)')
+parser.add_argument('--collapse_tags', action='store_true', default=False, help='Whether to collapse ENGLISH and OTHER tags into a single LOANWORD tag  (default True)')
+parser.add_argument('--expanded_features', action='store_true', default=False, help = 'Include expanded features (default False)')
 
 
 
