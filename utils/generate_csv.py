@@ -18,7 +18,7 @@ TO_MONTH_NAME = {1: "ene",
                  12: "dic"}
 
 if __name__ == "__main__":
-
+    parser = argparse.ArgumentParser()
     args = parser.parse_args()
     parser = argparse.ArgumentParser()
     parser.add_argument('--month', type=int, help='Month')
