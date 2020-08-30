@@ -10,6 +10,12 @@ import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from constants import ANGLICISM_INDEX, ARTICLES_INDEX, TO_BE_TWEETED_PATTERN, PATH_TO_VIZ
 
+"""
+ANGLICISM_INDEX = "C:/Users/Elena/Desktop/lazaro/data/anglicisms_index.csv"
+ARTICLES_INDEX = "C:/Users/Elena/Desktop/lazaro/data/articles_index.csv"
+PATH_TO_VIZ = "C:/Users/Elena/Desktop/lazaro/web/viz/"
+TO_BE_TWEETED_PATTERN = "C:/Users/Elena/Desktop/lazaro/tobetweeted/tobetweeted_"
+"""
 
 pd.options.plotting.backend = "plotly"
 
@@ -23,9 +29,9 @@ MEDIOS = {"elconfidencial" : "El Confidencial",
           "elmundo": "El Mundo",
           "20minutos": "20 minutos"}
 
-TITLES = {"top20": ("Anglicismos más frecuentes", "Evolución de la frecuencia de los 20 anglicismos más frecuentes"),
-           "crecientes": ("Anglicismos que más crecen", "Anglicismos que más crecieron la semana pasada"),
-           "latest": ("Últimas incorporaciones. Anglicismos registrados por primera vez esta semana")}
+TITLES = {"top20": "Evolución de los 20 anglicismos más frecuentes",
+           "crecientes": "Anglicismos que más crecieron la semana pasada",
+           "latest": "Anglicismos registrados por primera vez la semana pasada"}
 
 #ANGLICISM_INDEX = "lazarobot/anglicisms_index.csv"
 #ARTICLES_INDEX = "articles_index.csv"
@@ -38,7 +44,7 @@ SECTIONS = ['portada', 'espana', 'internacional', 'cultura', 'television',
 
 def get_table_ultimos_angl(my_title):
     paths = []
-    for i in range(7):
+    for i in range(1,7):
         get_day= TODAY - timedelta(days=i)
         my_path = TO_BE_TWEETED_PATTERN + get_day.strftime('%d%m%Y') + ".csv"
         paths.append(my_path)
@@ -59,8 +65,9 @@ def get_table_ultimos_angl(my_title):
         cells=dict(values=[mydf.borrowing, mydf.context, mydf.link, mydf.date],
                    align='left'))
     ])
-    arranged_title = TITLES[my_title][0] + "<br>" + TITLES[my_title][1]
-    fig.update_layout(title_text="Últimos anglicismos registrados")
+    #arranged_title = TITLES[my_title][0] + "<br>" + TITLES[my_title][1]
+    fig.update_layout(title_text=TITLES[my_title],
+                      font=dict(family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial"))
     with open(PATH_TO_VIZ + my_title+'.html', 'w') as f:
         f.write(fig.to_html(include_plotlyjs='cdn'))
 
@@ -95,17 +102,18 @@ def build_graph(dataframe, list_of_words, since_week, my_title):
                   line_shape="spline",
                   render_mode="svg",
                   #log_y=True,
-                  labels={"my_week": "Tiempo", "freq": "Frecuencia"},
+                  labels={"my_week": "Tiempo", "freq": "Frecuencia <br>(por cada 100.000 palabras)"},
                   template="simple_white")
     fig.update_traces(mode="markers+lines")
     fig.update_layout(legend_title_text='Palabra')
 
-    arranged_title = TITLES[my_title][0] + "<br>" + TITLES[my_title][1]
 
     #layout = dict(updatemenus=updatemenus, title='Linear scale')
     fig2 = go.Figure(fig)
-    fig2.update_layout(title_text=arranged_title,
-                      updatemenus=[
+    fig2.update_layout(title_text=TITLES[my_title],
+                      font=dict(family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial"))
+
+    fig2.update_layout(updatemenus=[
                           dict(
                               buttons=list([
                                   dict(label="Linear",
