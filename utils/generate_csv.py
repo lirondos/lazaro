@@ -25,7 +25,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     anglicism_pd = pd.read_csv(ANGLICISM_INDEX, error_bad_lines=False, parse_dates=['date'])
-    df['date'] = pd.to_datetime(df.date, utc=True)
+    anglicism_pd['date'] = pd.to_datetime(anglicism_pd.date, utc=True)
 
-    mydf = df.query("date.dt.month==@month and date.dt.year==@year")
+    mydf = anglicism_pd.query("date.dt.month==@month and date.dt.year==@year")
     mydf.to_csv(DATA_FOLDER + TO_MONTH_NAME[args.month]+args.year+".csv")
