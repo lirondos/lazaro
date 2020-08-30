@@ -17,12 +17,12 @@ TO_MONTH_NAME = {1: "ene",
                  11: "nov",
                  12: "dic"}
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--month', type=int, help='Month')
+parser.add_argument('--year', type=int, help='Year')
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
     args = parser.parse_args()
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--month', type=int, help='Month')
-    parser.add_argument('--year', type=int, help='Year')
 
     anglicism_pd = pd.read_csv(ANGLICISM_INDEX, error_bad_lines=False, parse_dates=['date'])
     df['date'] = pd.to_datetime(df.date, utc=True)
