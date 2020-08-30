@@ -16,7 +16,6 @@ ARTICLES_INDEX = "C:/Users/Elena/Desktop/lazaro/data/articles_index.csv"
 PATH_TO_VIZ = "C:/Users/Elena/Desktop/lazaro/web/viz/"
 TO_BE_TWEETED_PATTERN = "C:/Users/Elena/Desktop/lazaro/tobetweeted/tobetweeted_"
 """
-
 pd.options.plotting.backend = "plotly"
 
 TODAY = pd.Timestamp('today').floor('D')
@@ -44,7 +43,7 @@ SECTIONS = ['portada', 'espana', 'internacional', 'cultura', 'television',
 
 def get_table_ultimos_angl(my_title):
     paths = []
-    for i in range(1,7):
+    for i in range(7):
         get_day= TODAY - timedelta(days=i)
         my_path = TO_BE_TWEETED_PATTERN + get_day.strftime('%d%m%Y') + ".csv"
         paths.append(my_path)
@@ -140,6 +139,8 @@ anglicism_pd = pd.read_csv(ANGLICISM_INDEX, error_bad_lines=False, parse_dates=[
 anglicism_pd['date'] = pd.to_datetime(anglicism_pd.date, utc=True)
 anglicism_pd['week'] = anglicism_pd["date"].dt.week
 #print(anglicism_pd)
+anglicism_pd['borrowing'] = anglicism_pd['borrowing'].replace(['selfies'], 'selfie')
+
 anglicism_pd['borrowing'] = anglicism_pd['borrowing'].apply(
     lambda x: singularize(x) if not x.endswith(" data") else x)
 
@@ -180,11 +181,19 @@ min_freq = prev_week['freq'].min()
 crecen_mas_df['freq_2'] = crecen_mas_df['freq_2'].fillna(min_freq)
 crecen_mas_df['diff'] = ((crecen_mas_df['freq'] - crecen_mas_df['freq_2']) / crecen_mas_df['freq_2']) * 100
 #print(crecen_mas_df.to_string())
+
+nuevas_incorporaciones = crecen_mas_df.sort_values(by=["diff"], ascending=False)["borrowing"].to_list()[:10]
+
 MIN_FREQ = 1.0
-crecen_mas_df_select = crecen_mas_df.query("freq > @MIN_FREQ and diff > 0" )
+crecen_mas_df_select = crecen_mas_df.query("freq > @MIN_FREQ and diff > 0" ).sort_values(by=["diff"], ascending=False)["borrowing"].to_list()[:10]
 
+candidatas_crecientes = nuevas_incorporaciones + crecen_mas_df_select
 
-higher_increase = crecen_mas_df_select.sort_values(by=["diff"], ascending=False)["borrowing"].to_list()
-higher_increase = [candidate for candidate in higher_increase if candidate not in my_toptweenty][:10]
-since_when = TODAY.week - 4
-build_graph(merged, higher_increase, since_when, "crecientes")
+crecientes = list(set([candidate for candidate in candidatas_crecientes if candidate not in my_toptweenty]))
+#higher_increase = crecen_mas_df.sort_values(by=["diff"], ascending=False)["borrowing"]
+
+#.to_list()
+#higher_increase = [candidate for candidate in higher_increase if candidate not in my_toptweenty][:10]
+since_when = TODAY.week - 3
+#print(crecientes)
+build_graph(merged, crecientes, since_when, "crecientes")
