@@ -387,13 +387,10 @@ if __name__ == "__main__":
 		for j in feed["entries"]:
 			url = j["links"][0]["href"]
 			if my_newspaper == "lavanguardia": # we skip articles from la vanguardia whose feed summary are in catalan
-				if len(j['summary'])>10:
-					summary = j['summary']
-					detected = translator.detect(summary)
-					language = detected.lang
-					if language == "ca":
-						continue
-				else:
+				summary = j["title"] + ". " + j['summary'] if "summary" in j and len(j['summary'])>10 else j["title"]
+				detected = translator.detect(summary)
+				language = detected.lang
+				if language == "ca":
 					continue
 			text, publish_date = get_text_date(url)
 			if text and "Inicia sesi\u00f3n para seguir leyendo" not in text and "\n\nPREMIUM\n\n" not in text and  "Para seguir leyendo, hazte Premium" not in text and "Publirreportaje\n" not in text and "En 20Minutos buscamos las mejores ofertas de" not in text and "/el-observatorio/" not in url and not url.startswith("https://cat.elpais.com") and "que-ver-hoy-en-tv" not in url and "/encatala/" not in url and "/horoscopo-" not in url and "vodafone.es" not in url and "/escaparate/" not in url and "/mingote/" not in url and "/ultima-hora-" not in url and "/el-roto.html" not in url and "última hora" not in j["title"] and "Podcast |" not in j["title"] and "DIRECTO |" not in j["title"] and "/audiencias-canales/" not in url: # newspaper successfully parsed the article and it's not catalan edition
