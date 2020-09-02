@@ -75,6 +75,7 @@ def get_text_date(url):
 		article.html = re.sub(r"<blockquote cite=\".+?</blockquote>", "", article.html)
 		#article.html = re.sub(r"<h2 class=\"mce\">&middot.+?</p>", "", article.html) # subtitulares de vertele
 		article.html = re.sub(r"<figcaption.+?</figcaption>", "", article.html)
+		article.html = re.sub(r"<p><em>Si alguien te ha reenviado esta carta.+?</em></p>", "", article.html) # Matrioska de verne
 		article.html = re.sub(r"<p class=\"\">(<b>)?Información sobre el coronavirus(</b>)?.+?sobre la pandemia.*?</p>", "", article.html)
 		article.html = re.sub(r"<p class=\"\">.*?Suscríbase aquí.*?</p>", "", article.html) # newsletter El País
 		article.html = re.sub(r"<a[^>]+>Apúntate a .*?</a>", "", article.html) # newsletter 20 minutos
