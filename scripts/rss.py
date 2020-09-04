@@ -386,6 +386,8 @@ if __name__ == "__main__":
 		feed = feedparser.parse(rss)
 		print(rss)
 		for j in feed["entries"]:
+			if not "links" in j:
+				continue
 			url = j["links"][0]["href"]
 			if my_newspaper == "lavanguardia": # we skip articles from la vanguardia whose feed summary are in catalan
 				summary = j["title"] + ". " + j['summary'] if "summary" in j and len(j['summary'])>10 else j["title"]
