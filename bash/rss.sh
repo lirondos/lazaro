@@ -5,6 +5,7 @@ conda activate lazaro
 N=8
 
 mkdir /home/ealvarezmellado/lazaro/tobepredicted/"$(date +'%d%m%Y')"
+
 (
 for newspaper in "eldiario" "elpais" "elconfidencial" "elmundo" "abc" "20minutos" "efe" "lavanguardia"; do
 
