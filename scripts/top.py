@@ -8,14 +8,20 @@ import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from constants import ANGLICISM_INDEX, ARTICLES_INDEX
 
+"""
+ANGLICISM_INDEX = "C:/Users/Elena/Desktop/lazaro/data/anglicisms_index.csv"
+ARTICLES_INDEX = "C:/Users/Elena/Desktop/lazaro/data/articles_index.csv"
+PATH_TO_VIZ = "C:/Users/Elena/Desktop/lazaro/web/viz/"
+TO_BE_TWEETED_PATTERN = "C:/Users/Elena/Desktop/lazaro/tobetweeted/tobetweeted_"
+
+
+"""
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(KEY, SECRET)
 
+
 TODAY = pd.Timestamp('today').floor('D')
-#ANGLICISM_INDEX = "lazarobot/anglicisms_index.csv"
-#ARTICLES_INDEX = "lazarobot/articles_index.csv"
-#ANGLICISM_INDEX = "anglicisms_index.csv"
-#ARTICLES_INDEX = "articles_index.csv"
+
 
 DIGIT2EMOJI = {1: ":one:", 2: ":two:", 3: ":three:", 4: ":four:", 5: ":five:", 6: ":six:", 7: ":seven:", 8: ":eight:", 9: ":nine:", 10: ":ten:"}
 
@@ -49,7 +55,7 @@ def print_reply():
 
 
 def get_last_week(df):
-    df['date'] = pd.to_datetime(df.date, utc=True)
+    df['date'] = pd.to_datetime(df.date, errors='coerce', utc=True)
     mask = (TODAY - df['date'].dt.tz_convert(None)).dt.days <= 7
     last_week = df.loc[mask]
     return last_week
@@ -128,6 +134,7 @@ if __name__ == "__main__":
     print(biggest_decrease[["borrowing", "diff"]])
     print(mytweet)
     """
+    #print(mytweet)
     print_tweet(mytweet)
     print_reply()
 
