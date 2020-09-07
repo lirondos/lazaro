@@ -17,6 +17,7 @@ ARTICLES_INDEX = "C:/Users/Elena/Desktop/lazaro/data/articles_index.csv"
 PATH_TO_VIZ = "C:/Users/Elena/Desktop/lazaro/web/viz/"
 TO_BE_TWEETED_PATTERN = "C:/Users/Elena/Desktop/lazaro/tobetweeted/tobetweeted_"
 """
+
 pd.options.plotting.backend = "plotly"
 
 TODAY = pd.Timestamp('today').floor('D')
@@ -57,6 +58,20 @@ def get_table_ultimos_angl(my_title):
     mydf["newspaper"] = mydf["newspaper"].map(MEDIOS)
     mydf["link"] = "<a href=\"" + mydf.url + "\">"+ mydf.newspaper + "</a>"
     mydf["context"] = "<i>" + mydf["context"] + "</i>"
+    newdf = mydf[['borrowing', 'context', 'link', 'date']]
+    newdf.columns = ['Anglicismo', 'Contexto', 'Medio', 'Fecha']
+    html = newdf.to_html(index=False, escape=False, classes = ["table", "table-striped"])
+
+    header = "<html><head><meta charset=\"utf-8\" /><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\"></head><body>"
+
+    footer = "</body></html>"
+    html = header + html + footer
+    html = html.replace("border=\"1\"", "")
+    # write html to file
+    text_file = open(PATH_TO_VIZ + "latest.html", "w", encoding = "utf-8")
+    text_file.write(html)
+    text_file.close()
+    """
     fig = go.Figure(data=[go.Table(
         #columnwidth=[100, 400, 100, 70],
         #columnwidth=[20, 50, 20, 10],
@@ -74,6 +89,7 @@ def get_table_ultimos_angl(my_title):
 
     with open(PATH_TO_VIZ + my_title+'.html', 'w') as f:
         f.write(fig.to_html(include_plotlyjs='cdn'))
+    """
 
 
 
