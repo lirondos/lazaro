@@ -22,6 +22,17 @@
     <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <style>
+        .miestilo::before {
+    padding-top: 56.25%;
+}
+@media (max-width: 768px) {
+    .miestilo::before {
+        padding-top: 100%;
+    }
+}
+    </style>
+
 
 
 </head>
@@ -115,8 +126,8 @@
 
       <div class="row">
 <div class="col-lg 3 col-md-3 col-sm-12 col-xs-12">
-    <div class="embed-responsive embed-responsive-16by9">
-              <!--<div class="embed-responsive embed-responsive-1by1">-->
+    <div class="embed-responsive miestilo">
+        <!--<div class="embed-responsive embed-responsive-1by1">-->
 
 
   <object type="text/html"  data="viz/top20.html"></object>
