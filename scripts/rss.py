@@ -389,6 +389,8 @@ if __name__ == "__main__":
 			if not "links" in j:
 				continue
 			url = j["links"][0]["href"]
+			if my_newspaper not in url:
+				continue
 			if my_newspaper == "lavanguardia": # we skip articles from la vanguardia whose feed summary are in catalan
 				summary = j["title"] + ". " + j['summary'] if "summary" in j and len(j['summary'])>10 else j["title"]
 				detected = translator.detect(summary)
