@@ -64,19 +64,29 @@
 
   <div class="container">
     <h2>¿Qué es Lázaro?</h2>
-    <p class="lead">Lazaro es un modelo que detecta posibles extranjerismos (fundamentalmente anglicismos) en la prensa en español. Lázaro analiza a diario la prensa española y extrae los anglicisimos aparecidos en las noticias del día. Actualmente Lázaro analiza los artículos publicados en ochos medios españoles: elDiario.es, El País, El Mundo, ABC, La Vanguardia, El Confidencial, 20minutos y EFE. Las gráficas de esta web se actualizan cada domingo.</p>
-
-      <p class="lead">Los anglicismos nuevos (es decir, aquellos que Lázaro no ha visto previamente) son tuiteados a diario por el <a href="https://twitter.com/lazarobot">bot de Twitter @lazarobot</a>. Asimismo, cada domingo <a href="https://twitter.com/lazarobot">@lazarobot</a> publica el <i>ranking</i> con los diez anglicismos más frecuentes de la semana.</p>
-
-<p class="lead">El modelo de extracción de anglicismos de Lázaro es un CRF (Conditional Random Field). Se puede encontrar más información sobre el modelo y sobre el corpus de entrenamiento en los siguientes recursos:
+    <p class="lead">Lazaro es un observatorio del anglicimo en la prensa española. El objetivo del proyecto es estudiar el uso de anglicismos (es decir, de préstamos crudos del inglés) en la prensa española de forma empírica y a tiempo real. Cada día, Lázaro se conecta a distintos medios de comunicación españoles, analiza las últimas noticias publicadas y extrae los anglicismos aparecidos en las noticias del día. Los anglicismos registrados se agregan y se crean las gráficas que aparecen en esta página. Actualmente Lázaro analiza los artículos publicados en ochos medios españoles: elDiario.es, El País, El Mundo, ABC, La Vanguardia, El Confidencial, 20minutos y EFE.</p>
+    
+    <p class="lead"> El núcleo del proyecto es un modelo de aprendizaje automático que detecta posibles extranjerismos (fundamentalmente anglicismos) en la prensa en español. Si bien el modelo ha sido entrenado para extraer anglicismos, también extrae ocasionalmente préstamos de otras lenguas. El modelo de extracción de anglicismos de Lázaro es un CRF (Conditional Random Field). El código del modelo y el corpus de entrenamiento están disponibles <a href="https://github.com/lirondos/lazaro">en el repositorio de GitHub</a>. Se puede encontrar más información sobre el modelo y sobre el corpus de entrenamiento en las siguientes publicaciones:
   <ul>
-    <li><a href="https://www.aclweb.org/anthology/2020.calcs-1.1/"><i>An Annotated Corpus of Emerging Anglicisms in Spanish Newspaper Headlines</i>.</a></li>
-    <li><a href="http://bir.brandeis.edu/handle/10192/37532"><i>Lázaro: An Extractor of Emergent Anglicisms in Spanish Newswire</i>.</a>
+    <li>Álvarez Mellado, E., <a href="https://www.aclweb.org/anthology/2020.calcs-1.1/"><i>An Annotated Corpus of Emerging Anglicisms in Spanish Newspaper Headlines</i>.</a>, Proceedings of the The 4th Workshop on Computational Approaches to Code Switching, pp. 1-8, 2020.</li>
+    <li>Álvarez Mellado, E., <a href="http://bir.brandeis.edu/handle/10192/37532"><i>Lázaro: An Extractor of Emergent Anglicisms in Spanish Newswire</i></a>, MS thesis, Brandeis University, 2020.
     </li>
 </ul></p>
-    <p class="lead">Lázaro nació como proyecto final del máster de Lingüística Computacional de la Universidad de Brandeis bajo la supervisión de <a href="https://lignos.org/">Constantine Lignos</a>.</p>
-  <p class="lead">El nombre del proyecto es un homenaje al filólogo español <a href="https://es.wikipedia.org/wiki/Fernando_L%C3%A1zaro_Carreter">Lázaro Carreter</a>, cuyas columnas sobre prescripción lingüística en los medios de comunicación fueron muy populares en los años 1980 y 1990.</p>
-  </div>
+    
+    <h3>Bot de Twitter:  <code>@lazarobot </code></h3>
+      <p class="lead">Los anglicismos nuevos que Lázaro encuentra (es decir, aquellos que el modelo no ha visto previamente) son tuiteados a diario por el <a href="https://twitter.com/lazarobot">bot de Twitter @lazarobot</a>. Asimismo, cada domingo <a href="https://twitter.com/lazarobot">@lazarobot</a> publica el <i>ranking</i> con los diez anglicismos más frecuentes de la semana.</p>
+      
+     <h2>¿Qué no es Lázaro?</h2>
+     <p class="lead">El propósito del proyecto es observar, analizar y describir el uso de anglicismos en la prensa española. En ningún caso, el objetivo del proyecto es afear, señalar o criticar el uso de anglicismos, ni a quienes los usan. Tampoco es propósito de este proyecto proponer traducciones alternativas al uso de anglicismos.</p>
+
+
+    <h2>¿Por qué <i>Lázaro</i>?</h2>
+      <p class="lead">El nombre del proyecto es un homenaje al filólogo español <a href="https://es.wikipedia.org/wiki/Fernando_L%C3%A1zaro_Carreter">Lázaro Carreter</a>, cuyas columnas sobre prescripción lingüística en los medios de comunicación (y muy especialmente sobre el uso de anglicismos) fueron muy populares en los años 1980 y 1990.</p>
+ 
+    <h2>Créditos</h2>
+    <p class="lead">Lázaro es un proyecto de <a href="https://lirondos.github.io/">Elena Álvarez Mellado</a>. El germen de Lázaro nació como proyecto final del máster de Lingüística Computacional de la Universidad de Brandeis bajo la supervisión de <a href="https://lignos.org/">Constantine Lignos</a>.</p>
+     </div>
+
 
 <!-- Footer -->
 <!-- Footer -->
