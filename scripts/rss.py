@@ -122,9 +122,11 @@ def get_text_date(url):
 		article.html = article.html.replace("<i>", "'")
 		article.html = article.html.replace("</i>", "'")
 		article.parse()
+		"""
 		if article.meta_description:
 			article.text = article.meta_description + "\n\n" + article.text
 		return  article.text, article.publish_date
+		"""
 	except newspaper.article.ArticleException:
 		return None, None
 
