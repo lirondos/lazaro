@@ -125,8 +125,8 @@ def get_text_date(url):
 		"""
 		if article.meta_description:
 			article.text = article.meta_description + "\n\n" + article.text
-		return  article.text, article.publish_date
 		"""
+		return  article.text, article.publish_date
 	except newspaper.article.ArticleException:
 		return None, None
 
