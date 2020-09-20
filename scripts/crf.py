@@ -353,7 +353,10 @@ def connect_to_db():
     
 def write_predictions(predicted_docs):
     anglicism_pd = pd.read_csv(ANGLICISM_INDEX, error_bad_lines=False)
-    mydb = connect_to_db()
+    try:
+        mydb = connect_to_db()
+    except: 
+        pass
     with open(TO_BE_TWEETED_PATTERN + TODAY +'.csv', 'a', encoding = "utf-8", newline='') as tobetweeted, open(ANGLICISM_INDEX, 'a', encoding="utf-8", newline='') as anglicism_index:
         anglicism_index_writer = csv.writer(anglicism_index, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         tobetweeted_writer = csv.writer(tobetweeted, delimiter=',', quoting=csv.QUOTE_MINIMAL)
@@ -371,7 +374,10 @@ def write_predictions(predicted_docs):
                     context = mydoc[ent.start - 12:ent.end + 12].text
                 context = context.replace("\n", ". ")
                 anglicism_index_writer.writerow([ent.text.lower(), ent.label_, context, mydoc.user_data["newspaper"], mydoc.user_data["url"], mydoc.user_data["date"], mydoc.user_data["categoria"],ent.start, ent.end])
-                write_to_db(mydb, ent.text, ent.label_, context, mydoc.user_data["newspaper"], mydoc.user_data["url"], mydoc.user_data["date"], mydoc.user_data["categoria"],ent.start, ent.end)
+                try:
+                    write_to_db(mydb, ent.text, ent.label_, context, mydoc.user_data["newspaper"], mydoc.user_data["url"], mydoc.user_data["date"], mydoc.user_data["categoria"],ent.start, ent.end)
+                except: 
+                    pass
                 seriesObj = anglicism_pd.apply(lambda x: True if x['borrowing'] == ent.text.lower() else False, axis=1)
                 times_appeared_prev = len(seriesObj[seriesObj == True].index)
                 if times_appeared_prev == 1:
