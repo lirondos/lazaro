@@ -20,6 +20,40 @@
     text-align: center;
 }
 
+.mycounter{
+    font-size:3vw;
+}
+
+@media (max-width: 768px) {
+    .mycounter{
+        font-size: 3vw;
+    }
+}
+
+@media screen and (min-width: 1400px) {
+    .mycounter{
+        font-size:1vw;
+    }
+}
+
+
+.mycountertext{
+    font-size:1.5vw;
+}
+
+
+@media (max-width: 768px) {
+    .mycountertext{
+        font-size: 3vw;
+    }
+}
+
+@media screen and (min-width: 1400px) {
+    .mycountertext{
+        font-size:1vw;
+    }
+}
+
 .fa-2x {
     margin: 0 auto;
     float: none;

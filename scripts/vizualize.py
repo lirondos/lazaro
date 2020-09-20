@@ -62,11 +62,12 @@ def get_table_ultimos_angl(my_title):
     newdf.columns = ['Anglicismo', 'Contexto', 'Medio', 'Fecha']
     html = newdf.to_html(index=False, escape=False, classes = ["table", "table-striped"])
 
-    header = "<html><head><meta charset=\"utf-8\" /><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\"></head><body>"
+    header = "<html><head><meta charset=\"utf-8\" /><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">      <link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css\"><script src=\"../vendor/jquery/jquery.slim.min.js\"></script><script>$(document).ready(function() {$(\'#mylatest\').DataTable();} );</script></head><body>"
 
     footer = "</body></html>"
     html = header + html + footer
     html = html.replace("border=\"1\"", "")
+    html = html.replace("<table", "<table id=\"mylatest\"")
     # write html to file
     text_file = open(PATH_TO_VIZ + "latest.html", "w", encoding = "utf-8")
     text_file.write(html)
