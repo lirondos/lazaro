@@ -37,6 +37,9 @@ from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILO
 from constants import ANGLICISM_INDEX, TO_BE_TWEETED_PATTERN, AUTOMATICALLY_ANNOTATED_FOLDER, TO_BE_PREDICTED_FOLDER, CORPUS
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
 from utils import PRF1
+from secret import MY_HOST, MY_USERNAME, MY_PASS, MY_DB
+import mysql.connector
+
 
 KFOLD = 10
 NLP = spacy.load('es_core_news_md', disable=["ner"])
@@ -67,6 +70,7 @@ parser.add_argument('--expanded_features', action='store_true', default=False, h
 
 ENCODER_DICT = {"BIO": BIOEncoder(), "IO": IOEncoder(), "BILOU": BILOUEncoder(), "BMES": BMESEncoder(), "BIOES": BIOESEncoder()}
 TAG_COLLAPSE = {"ENG":"BORROWING", "OTHER":"BORROWING"}
+
 
 
 def custom_tokenizer(nlp):
@@ -332,9 +336,24 @@ def train_predict(train_set, test_set, max_iterations, c1, c2, encoder, window_s
             doc.ents = []
     predicted = [crf(doc) for doc in test_set]
     return predicted
+    
+def write_to_db(mydb, ent, label, context, newspaper, url, date, categoria,start, end):
+    
+    mycursor = mydb.cursor()
 
+    sql = "INSERT INTO t_anglicisms (borrowing,lang,context,newspaper,url,date,section,start_token,end_token) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    val = (ent, label, context, newspaper, url, date, categoria,start, end)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
+    
+def connect_to_db():
+    mydb = mysql.connector.connect(host=MY_HOST,user=MY_USERNAME,password=MY_PASS,database=MY_DB)
+    return mydb
+    
 def write_predictions(predicted_docs):
     anglicism_pd = pd.read_csv(ANGLICISM_INDEX, error_bad_lines=False)
+    mydb = connect_to_db()
     with open(TO_BE_TWEETED_PATTERN + TODAY +'.csv', 'a', encoding = "utf-8", newline='') as tobetweeted, open(ANGLICISM_INDEX, 'a', encoding="utf-8", newline='') as anglicism_index:
         anglicism_index_writer = csv.writer(anglicism_index, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         tobetweeted_writer = csv.writer(tobetweeted, delimiter=',', quoting=csv.QUOTE_MINIMAL)
@@ -346,12 +365,13 @@ def write_predictions(predicted_docs):
             for ent in mydoc.ents:
                 myents.append([ent.start, ent.end, ent.label_])
                 myspans.append(ent.text)
-                if ent.start < 6:
-                    context = mydoc[0:ent.end + 6].text
+                if ent.start < 12:
+                    context = mydoc[0:ent.end + 12].text
                 else:
-                    context = mydoc[ent.start - 6:ent.end + 6].text
+                    context = mydoc[ent.start - 12:ent.end + 12].text
                 context = context.replace("\n", ". ")
                 anglicism_index_writer.writerow([ent.text.lower(), ent.label_, context, mydoc.user_data["newspaper"], mydoc.user_data["url"], mydoc.user_data["date"], mydoc.user_data["categoria"],ent.start, ent.end])
+                write_to_db(mydb, ent.text, ent.label_, context, mydoc.user_data["newspaper"], mydoc.user_data["url"], mydoc.user_data["date"], mydoc.user_data["categoria"],ent.start, ent.end)
                 seriesObj = anglicism_pd.apply(lambda x: True if x['borrowing'] == ent.text.lower() else False, axis=1)
                 times_appeared_prev = len(seriesObj[seriesObj == True].index)
                 if times_appeared_prev == 1:
