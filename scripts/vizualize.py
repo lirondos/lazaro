@@ -217,7 +217,9 @@ crecen_mas_df_select = crecen_mas_df.query("freq > @MIN_FREQ and diff > 0" ).sor
 
 candidatas_crecientes = nuevas_incorporaciones + crecen_mas_df_select
 
-crecientes = list(set([candidate for candidate in candidatas_crecientes if candidate not in my_toptweenty]))
+#crecientes = list(set([candidate for candidate in candidatas_crecientes if candidate not in my_toptweenty]))
+crecientes = list(set([candidate for candidate in candidatas_crecientes]))
+
 
 
 #higher_increase = crecen_mas_df.sort_values(by=["diff"], ascending=False)["borrowing"]
