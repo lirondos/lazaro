@@ -161,7 +161,7 @@ def build_graph(dataframe, list_of_words, since_week, my_title):
 for section in SECTIONS:
     anglicisms_per_section(section)
 """
-get_table_ultimos_angl("latest")
+#get_table_ultimos_angl("latest")
 
 anglicism_pd = pd.read_csv(ANGLICISM_INDEX, error_bad_lines=False, parse_dates=['date'])
 anglicism_pd['date'] = pd.to_datetime(anglicism_pd.date, errors='coerce', utc=True)
