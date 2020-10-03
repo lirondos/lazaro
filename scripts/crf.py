@@ -368,10 +368,10 @@ def write_predictions(predicted_docs):
             for ent in mydoc.ents:
                 myents.append([ent.start, ent.end, ent.label_])
                 myspans.append(ent.text)
-                if ent.start < 12:
-                    context = mydoc[0:ent.end + 12].text
+                if ent.start < 15:
+                    context = mydoc[0:ent.end + 15].text
                 else:
-                    context = mydoc[ent.start - 12:ent.end + 12].text
+                    context = mydoc[ent.start - 15:ent.end + 15].text
                 context = context.replace("\n", ". ")
                 anglicism_index_writer.writerow([ent.text.lower(), ent.label_, context, mydoc.user_data["newspaper"], mydoc.user_data["url"], mydoc.user_data["date"], mydoc.user_data["categoria"],ent.start, ent.end])
                 try:
