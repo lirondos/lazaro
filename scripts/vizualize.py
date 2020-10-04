@@ -226,6 +226,6 @@ crecientes = list(set([candidate for candidate in candidatas_crecientes]))
 
 #.to_list()
 #higher_increase = [candidate for candidate in higher_increase if candidate not in my_toptweenty][:10]
-since_when = TODAY.week - 3
+since_when = TODAY.week - 2
 #print(crecientes)
 build_graph(merged, crecientes, since_when, "crecientes")
