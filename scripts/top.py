@@ -109,6 +109,8 @@ if __name__ == "__main__":
         borrowing = row["borrowing"]
         freq = row["freq"]
         past_freq = two_weeks_anglicism_freq.loc[two_weeks_anglicism_freq['borrowing'] == borrowing]["freq"]
+        if len(past_freq.index) == 0: # if no freq registered for two weeks ago, we assign the min freq available that week
+            past_freq = pd.Series([two_weeks_anglicism_freq['freq'].min()])
         #diff = ((past_freq.values[0] - freq) / freq) * 100 * -1
         diff = ((freq - past_freq.values[0]) / past_freq.values[0]) * 100
         #print(str(index) + " (" + str(past_freq.index[0]) + ") " + str(borrowing) + " " + str(freq))
