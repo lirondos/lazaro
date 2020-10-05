@@ -42,7 +42,7 @@ def write_to_db(mydb, url, headline, date, newspaper, section, tokens):
 
     mycursor = mydb.cursor()
 
-    sql = "INSERT INTO t_articles (url,headline,date,newspaper,section,tokens) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO t_articles (url,headline,date,newspaper,section,tokens) VALUES (%s, %s, %s, %s, %s, %s)"
     val = (url, headline, date, newspaper, section, tokens)
     mycursor.execute(sql, val)
 
