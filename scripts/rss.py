@@ -442,10 +442,10 @@ if __name__ == "__main__":
 					seen_urls.add(url)
 
 	#with open(path+'extra.jsonl', 'a') as f:
-    try:
-        mydb = connect_to_db()
-    except: 
-        pass
+	try:
+		mydb = connect_to_db()
+	except: 
+		pass
 	with open(destiny_path + my_newspaper + "_" + today.strftime('%d%m%Y') + '.jsonl', 'a', encoding = "utf-8") as json_file, open(indices_path+ my_newspaper + '.csv', mode='w', newline='', encoding = "utf-8") as csv_file:
 		file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 		for item in news:
@@ -454,8 +454,8 @@ if __name__ == "__main__":
 			doc = NLP(item["title"] + "\n" + item["text"])
 			number_of_words = len([token.text for token in doc if token.is_stop != True and token.is_punct != True])
 			file_writer.writerow([item["url"], item["title"], item["date"], item["newspaper"], item["categoria"], number_of_words])
-            try:
-                write_to_db(mydb, item["url"], item["title"], item["date"], item["newspaper"], item["categoria"], number_of_words)
-            except: 
-                 pass
+			try:
+				write_to_db(mydb, item["url"], item["title"], item["date"], item["newspaper"], item["categoria"], number_of_words)
+			except: 
+				pass
 
