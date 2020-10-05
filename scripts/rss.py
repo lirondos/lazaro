@@ -25,6 +25,8 @@ import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 #from lazaro import utils
 from constants import ARTICLES_INDEX, INDICES_FOLDER, TO_BE_PREDICTED_FOLDER
+from secret import MY_HOST, MY_USERNAME, MY_PASS, MY_DB
+import mysql.connector
 
 #ALREADY_SEEN_CSV = "lazarobot/articles_index.csv"
 NLP = spacy.load('es_core_news_md', disable=["ner"])
@@ -32,6 +34,19 @@ NLP = spacy.load('es_core_news_md', disable=["ner"])
 parser = argparse.ArgumentParser()
 parser.add_argument('--newspaper', type=str, help='Periodico del que leer el RSS')
 
+def connect_to_db():
+    mydb = mysql.connector.connect(host=MY_HOST,user=MY_USERNAME,password=MY_PASS,database=MY_DB)
+    return mydb
+    
+def write_to_db(mydb, url, headline, date, newspaper, section, tokens):
+
+    mycursor = mydb.cursor()
+
+    sql = "INSERT INTO t_articles (url,headline,date,newspaper,section,tokens) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    val = (url, headline, date, newspaper, section, tokens)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
 
 def custom_tokenizer(nlp):
     # contains the regex to match all sorts of urls:
@@ -427,6 +442,10 @@ if __name__ == "__main__":
 					seen_urls.add(url)
 
 	#with open(path+'extra.jsonl', 'a') as f:
+    try:
+        mydb = connect_to_db()
+    except: 
+        pass
 	with open(destiny_path + my_newspaper + "_" + today.strftime('%d%m%Y') + '.jsonl', 'a', encoding = "utf-8") as json_file, open(indices_path+ my_newspaper + '.csv', mode='w', newline='', encoding = "utf-8") as csv_file:
 		file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 		for item in news:
@@ -435,4 +454,8 @@ if __name__ == "__main__":
 			doc = NLP(item["title"] + "\n" + item["text"])
 			number_of_words = len([token.text for token in doc if token.is_stop != True and token.is_punct != True])
 			file_writer.writerow([item["url"], item["title"], item["date"], item["newspaper"], item["categoria"], number_of_words])
+            try:
+                write_to_db(mydb, item["url"], item["title"], item["date"], item["newspaper"], item["categoria"], number_of_words)
+            except: 
+                 pass
 
