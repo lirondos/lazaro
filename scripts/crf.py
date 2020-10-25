@@ -342,7 +342,7 @@ def write_to_db(mydb, ent, label, context, newspaper, url, date, categoria,start
     mycursor = mydb.cursor()
     date_object = datetime.strptime(date, '%A, %d %B %Y').date()
     date_str = date_object.strftime('%Y-%m-%d')
-    sql = "INSERT INTO t_anglicisms (borrowing,lang,context,newspaper,url,date,section,start_token,end_token, new_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,  %s)"
+    sql = "INSERT INTO t_anglicisms (borrowing,lang,context,newspaper,url,date,section,start_token,end_token, new_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     val = (ent, label, context, newspaper, url, date, categoria,start, end, date_str)
     mycursor.execute(sql, val)
 
