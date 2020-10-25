@@ -340,9 +340,10 @@ def train_predict(train_set, test_set, max_iterations, c1, c2, encoder, window_s
 def write_to_db(mydb, ent, label, context, newspaper, url, date, categoria,start, end):
     
     mycursor = mydb.cursor()
-
-    sql = "INSERT INTO t_anglicisms (borrowing,lang,context,newspaper,url,date,section,start_token,end_token, new_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,  STR_TO_DATE(%s, '%%W, %%d %%M %%Y'))"
-    val = (ent, label, context, newspaper, url, date, categoria,start, end, date)
+    date_object = datetime.strptime(date, '%A, %d %B %Y').date()
+    date_str = date_object.strftime('%Y-%m-%d')
+    sql = "INSERT INTO t_anglicisms (borrowing,lang,context,newspaper,url,date,section,start_token,end_token, new_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,  %s)"
+    val = (ent, label, context, newspaper, url, date, categoria,start, end, date_str)
     mycursor.execute(sql, val)
 
     mydb.commit()
