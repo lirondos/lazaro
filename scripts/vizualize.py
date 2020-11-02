@@ -170,7 +170,7 @@ anglicism_pd['week'] = anglicism_pd["date"].dt.week
 anglicism_pd['borrowing'] = anglicism_pd['borrowing'].replace(['selfies'], 'selfie')
 
 anglicism_pd['borrowing'] = anglicism_pd['borrowing'].apply(
-    lambda x: singularize(x) if not x.endswith(" data") else x)
+    lambda x: singularize(x) if not x.endswith(" data") and not x.endswith("glamour") else x)
 
 articles_pd = pd.read_csv(ARTICLES_INDEX, error_bad_lines=False, parse_dates=['date'])
 articles_pd['date'] = pd.to_datetime(articles_pd.date, errors='coerce', utc=True)
@@ -226,6 +226,6 @@ crecientes = list(set([candidate for candidate in candidatas_crecientes]))
 
 #.to_list()
 #higher_increase = [candidate for candidate in higher_increase if candidate not in my_toptweenty][:10]
-since_when = TODAY.week - 2
+since_when = TODAY.week - 3
 #print(crecientes)
 build_graph(merged, crecientes, since_when, "crecientes")
