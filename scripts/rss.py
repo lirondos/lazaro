@@ -20,7 +20,9 @@ from spacy.tokens import Span, Doc, Token
 from spacy.language import Language
 from spacy.tokenizer import Tokenizer
 #from textblob import TextBlob
-from googletrans import Translator
+#from googletrans import Translator
+#from google_trans_new import google_translator
+from langdetect import detect
 import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 #from lazaro import utils
@@ -153,7 +155,7 @@ def get_text_date(url):
 periodicos = dict()
 
 periodicos["probando"] = [
-("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", "portada")
+("https://www.lavanguardia.com/mvc/feed/rss/economia", "portada")
 	]
 
 periodicos["eldiario"] = [
@@ -402,7 +404,6 @@ if __name__ == "__main__":
 		os.makedirs(destiny_path)
 	news = list()
 	seen_urls = set() # este set sirve para controlar que noticias ya han sido añadidas
-	translator = Translator()
 	for rss, categoria in periodicos[my_newspaper]:
 		feed = feedparser.parse(rss)
 		print(rss)
@@ -414,10 +415,17 @@ if __name__ == "__main__":
 				continue
 			if my_newspaper == "lavanguardia": # we skip articles from la vanguardia whose feed summary are in catalan
 				summary = j["title"] + ". " + j['summary'] if "summary" in j and len(j['summary'])>10 else j["title"]
+				mylang = detect(summary)
+				if mylang == "ca":
+					print(summary)
+					print(url)
+					continue
+				"""
 				detected = translator.detect(summary)
 				language = detected.lang
 				if language == "ca":
 					continue
+				"""
 			text, publish_date = get_text_date(url)
 			if text and "Inicia sesi\u00f3n para seguir leyendo" not in text and "\n\nPREMIUM\n\n" not in text and  "Para seguir leyendo, hazte Premium" not in text and "Publirreportaje\n" not in text and "En 20Minutos buscamos las mejores ofertas de" not in text and "/el-observatorio/" not in url and not url.startswith("https://cat.elpais.com") and "que-ver-hoy-en-tv" not in url and "/encatala/" not in url and "/horoscopo-" not in url and "vodafone.es" not in url and "/escaparate/" not in url and "/mingote/" not in url and "/ultima-hora-" not in url and "/el-roto.html" not in url and "última hora" not in j["title"] and "Podcast |" not in j["title"] and "DIRECTO |" not in j["title"] and "/audiencias-canales/" not in url: # newspaper successfully parsed the article and it's not catalan edition
 				print(url)
