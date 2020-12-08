@@ -43,9 +43,10 @@ def connect_to_db():
 def write_to_db(mydb, url, headline, date, newspaper, section, tokens):
 
     mycursor = mydb.cursor()
-
-    sql = "INSERT INTO t_articles (url,headline,date,newspaper,section,tokens) VALUES (%s, %s, %s, %s, %s, %s)"
-    val = (url, headline, date, newspaper, section, tokens)
+    date_object = datetime.strptime(date, '%A, %d %B %Y').date()
+    date_str = date_object.strftime('%Y-%m-%d')
+    sql = "INSERT INTO t_articles (url,headline,date,newspaper,section,tokens,new_date) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    val = (url, headline, date, newspaper, section, tokens, date_str)
     mycursor.execute(sql, val)
 
     mydb.commit()
