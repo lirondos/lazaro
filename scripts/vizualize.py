@@ -111,11 +111,14 @@ def anglicisms_per_section(section):
     fig = px.line(mydf_science, x = 'unique_values', y = 'counts', title='Anglicismos por frecuencia en ' + section)
     fig.show()
 
-def build_graph(dataframe, list_of_words, since_week, my_title):
-    df = dataframe.query("week>@since_week and borrowing==@list_of_words")
-    df = df.loc[:, ['borrowing', 'my_week', 'freq']]
-    df['my_week'] = pd.to_datetime(df.my_week, errors='coerce', utc=True)
+def build_graph(dataframe, list_of_words, since_week, since_year, my_title):
+    df = dataframe.query("week>@since_week and year==@since_year and borrowing==@list_of_words")
+    df = df.loc[:, ['borrowing', 'my_week', 'year','freq']]
+    #df["my_week"] = df.year*100+df.weekofyear
+    #df['my_week'] = pd.to_datetime((df.year+df.my_week).astype(str) + '0', format='%Y%W%w')
+    df['my_week'] = pd.to_datetime(df.my_week.astype(str), errors='coerce', utc=True)
     df.sort_values(by=['my_week', "freq"], inplace=True, ascending=False)
+    #print(df.to_string())
     fig = px.line(df,
                   x="my_week",
                   y="freq",
@@ -166,6 +169,7 @@ for section in SECTIONS:
 anglicism_pd = pd.read_csv(ANGLICISM_INDEX, error_bad_lines=False, parse_dates=['date'])
 anglicism_pd['date'] = pd.to_datetime(anglicism_pd.date, errors='coerce', utc=True)
 anglicism_pd['week'] = anglicism_pd["date"].dt.week
+anglicism_pd['year'] = anglicism_pd["date"].dt.year
 #print(anglicism_pd)
 anglicism_pd['borrowing'] = anglicism_pd['borrowing'].replace(['selfies'], 'selfie')
 
@@ -176,28 +180,31 @@ articles_pd = pd.read_csv(ARTICLES_INDEX, error_bad_lines=False, parse_dates=['d
 articles_pd['date'] = pd.to_datetime(articles_pd.date, errors='coerce', utc=True)
 articles_pd['week'] = articles_pd["date"].dt.week
 articles_pd['year'] = articles_pd["date"].dt.year
-anglicisms_per_week = anglicism_pd.groupby(by=['borrowing', 'week']).size().reset_index(name="Appearances").sort_values('Appearances', ascending=False)
-articles_pd = articles_pd.query("year == @TODAY.year")
-words_per_week = articles_pd.groupby(['week']).sum()
+anglicisms_per_week = anglicism_pd.groupby(by=['borrowing', 'week', 'year']).size().reset_index(name="Appearances").sort_values('Appearances', ascending=False)
+articles_pd = articles_pd.query("year >= 2020")
+words_per_week = articles_pd.groupby(['week', 'year']).sum()
 #print(words_per_week.index)
 words_per_week_dict = (words_per_week.T).to_dict()
 #print(words_per_week_dict)
 #anglicism_pd['tokens'] = anglicism_pd['week'].map(words_per_week.set_index('week')['tokens'])
 #print(anglicism_pd)
-merged = pd.merge(anglicisms_per_week, words_per_week, on='week')
+merged = pd.merge(anglicisms_per_week, words_per_week, on=['week','year'])
 #print(merged)
 merged["freq"] =  100000*(merged["Appearances"]/merged["tokens"])
-merged["my_week"] = pd.to_datetime(2020, errors='coerce', format='%Y') + \
+merged["my_week"] = pd.to_datetime(merged.year, errors='coerce', format='%Y') + \
              pd.to_timedelta((merged.week.mul(7) - 3).astype(str)+ ' days')
-my_toptweenty = merged.query("week==@TODAY.week").sort_values(by=["freq"], ascending=False)["borrowing"].tolist()[:20]
+my_toptweenty = merged.query("week==@TODAY.week and year==@TODAY.year").sort_values(by=["freq"], ascending=False)["borrowing"].tolist()[:20]
 #print(merged)
 
-build_graph(merged, my_toptweenty, 30, "top20")
+build_graph(merged, my_toptweenty, 30, 2020, "top20")
 
 
 
-current_week = merged.query("week==@TODAY.week")
-prev_week = merged.query("week==@TODAY.week - 1")
+current_week = merged.query("week==@TODAY.week and year==@TODAY.year")
+if TODAY.week==1 or TODAY.week==53: # ñapa por si estamos en la primera semana del año
+    prev_week = merged.query("week==52 and year==@TODAY.year -1")
+else:
+    prev_week = merged.query("week==@TODAY.week - 1")
 temp = prev_week.rename({'freq': 'freq_2'}, axis=1)
 crecen_mas_df = current_week.merge(temp, how='left',
                               left_on='borrowing', right_on='borrowing')
@@ -227,5 +234,12 @@ crecientes = list(set([candidate for candidate in candidatas_crecientes]))
 #.to_list()
 #higher_increase = [candidate for candidate in higher_increase if candidate not in my_toptweenty][:10]
 since_when = TODAY.week - 3
+if TODAY.week<=3 or TODAY.week>52:
+    my_year = TODAY.year - 1
+else:
+    my_year = TODAY.year
 #print(crecientes)
-build_graph(merged, crecientes, since_when, "crecientes")
+#print(since_when)
+#print(my_year)
+#print(TODAY.week)
+build_graph(merged, crecientes, since_when, my_year, "crecientes")
