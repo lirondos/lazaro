@@ -287,7 +287,32 @@ periodicos["elconfidencial"] = [
 #("https://rss.gentleman.elconfidencial.com/gentlemania/", "estilo de vida"),
 #("https://rss.gentleman.elconfidencial.com/gourmet/", "estilo de vida"),
 ]
+
 periodicos["lavanguardia"] = [
+("https://www.lavanguardia.com/newsml/home.xml"), "portada"),
+("https://www.lavanguardia.com/newsml/internacional.xml", "internacional" ),
+("https://www.lavanguardia.com/newsml/politica.xml", "espana"),
+("https://www.lavanguardia.com/newsml/vida.xml", "salud"),
+("https://www.lavanguardia.com/newsml/deportes.xml", "deportes"),
+("https://www.lavanguardia.com/newsml/economia.xml", "economia"),
+("https://www.lavanguardia.com/newsml/opinion.xml", "opinion"),
+("https://www.lavanguardia.com/newsml/cultura.xml", "cultura"),
+("https://www.lavanguardia.com/newsml/gente.xml", "gente"),
+("https://www.lavanguardia.com/newsml/sucesos.xml", "sucesos"),
+("https://www.lavanguardia.com/newsml/ciencia.xml", "ciencia"),
+("https://www.lavanguardia.com/newsml/tecnologia.xml", "tecnologia"),
+("https://www.lavanguardia.com/newsml/television.xml", "television"),
+("https://www.lavanguardia.com/newsml/series.xml", "television"),
+("https://www.lavanguardia.com/newsml/ocio.xml", "ocio"),
+("https://www.lavanguardia.com/newsml/motor.xml", "motor"),
+("https://www.lavanguardia.com/newsml/de-moda.xml", "moda"),
+("https://www.lavanguardia.com/newsml/vivo.xml", "estilo de vida"),
+("https://www.lavanguardia.com/newsml/comer.xml", "estilo de vida"),
+]
+"""
+# viejo rss de La Vanguardia
+periodicos["lavanguardia"] = [
+("https://www.lavanguardia.com/newsml/home.xml"), "portada"),
 ("https://www.lavanguardia.com/mvc/feed/rss/home", "portada"),
 ("https://www.lavanguardia.com/mvc/feed/rss/internacional", "internacional" ),
 ("https://www.lavanguardia.com/mvc/feed/rss/politica", "espana"),
@@ -308,6 +333,7 @@ periodicos["lavanguardia"] = [
 ("https://www.lavanguardia.com/mvc/feed/rss/vivo", "estilo de vida"),
 ("https://www.lavanguardia.com/mvc/feed/rss/comer", "estilo de vida"),
 ]
+"""
 periodicos["elmundo"] = [
 ("https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml", "portada"),
 ("https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml", "espana"),
