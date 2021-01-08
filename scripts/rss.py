@@ -289,7 +289,7 @@ periodicos["elconfidencial"] = [
 ]
 
 periodicos["lavanguardia"] = [
-("https://www.lavanguardia.com/newsml/home.xml"), "portada"),
+("https://www.lavanguardia.com/newsml/home.xml", "portada"),
 ("https://www.lavanguardia.com/newsml/internacional.xml", "internacional" ),
 ("https://www.lavanguardia.com/newsml/politica.xml", "espana"),
 ("https://www.lavanguardia.com/newsml/vida.xml", "salud"),
