@@ -29,6 +29,8 @@ sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from constants import ARTICLES_INDEX, INDICES_FOLDER, TO_BE_PREDICTED_FOLDER
 from secret import MY_HOST, MY_USERNAME, MY_PASS, MY_DB
 import mysql.connector
+import requests
+import xmltodict
 
 #ALREADY_SEEN_CSV = "lazarobot/articles_index.csv"
 NLP = spacy.load('es_core_news_md', disable=["ner"])
@@ -36,42 +38,47 @@ NLP = spacy.load('es_core_news_md', disable=["ner"])
 parser = argparse.ArgumentParser()
 parser.add_argument('--newspaper', type=str, help='Periodico del que leer el RSS')
 
+def getxml(url):
+	response = requests.get(url)
+	data = xmltodict.parse(response.content)
+	return data
+
 def connect_to_db():
-    mydb = mysql.connector.connect(host=MY_HOST,user=MY_USERNAME,password=MY_PASS,database=MY_DB)
-    return mydb
-    
+	mydb = mysql.connector.connect(host=MY_HOST,user=MY_USERNAME,password=MY_PASS,database=MY_DB)
+	return mydb
+	
 def write_to_db(mydb, url, headline, date, newspaper, section, tokens):
 
-    mycursor = mydb.cursor()
-    date_object = datetime.strptime(date, '%A, %d %B %Y').date()
-    date_str = date_object.strftime('%Y-%m-%d')
-    sql = "INSERT INTO t_articles (url,headline,date,newspaper,section,tokens,new_date) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    val = (url, headline, date, newspaper, section, tokens, date_str)
-    mycursor.execute(sql, val)
+	mycursor = mydb.cursor()
+	date_object = datetime.strptime(date, '%A, %d %B %Y').date()
+	date_str = date_object.strftime('%Y-%m-%d')
+	sql = "INSERT INTO t_articles (url,headline,date,newspaper,section,tokens,new_date) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+	val = (url, headline, date, newspaper, section, tokens, date_str)
+	mycursor.execute(sql, val)
 
-    mydb.commit()
+	mydb.commit()
 
 def custom_tokenizer(nlp):
-    # contains the regex to match all sorts of urls:
-    prefix_re = re.compile(spacy.util.compile_prefix_regex(Language.Defaults.prefixes).pattern.replace("#", "!"))
-    infix_re = spacy.util.compile_infix_regex(Language.Defaults.infixes)
-    suffix_re = spacy.util.compile_suffix_regex(Language.Defaults.suffixes)
+	# contains the regex to match all sorts of urls:
+	prefix_re = re.compile(spacy.util.compile_prefix_regex(Language.Defaults.prefixes).pattern.replace("#", "!"))
+	infix_re = spacy.util.compile_infix_regex(Language.Defaults.infixes)
+	suffix_re = spacy.util.compile_suffix_regex(Language.Defaults.suffixes)
 
-    #special_cases = {":)": [{"ORTH": ":)"}]}
-    #prefix_re = re.compile(r'''^[[("']''')
-    #suffix_re = re.compile(r'''[])"']$''')
-    #infix_re = re.compile(r'''[-~]''')
-    #simple_url_re = re.compile(r'''^#''')
+	#special_cases = {":)": [{"ORTH": ":)"}]}
+	#prefix_re = re.compile(r'''^[[("']''')
+	#suffix_re = re.compile(r'''[])"']$''')
+	#infix_re = re.compile(r'''[-~]''')
+	#simple_url_re = re.compile(r'''^#''')
 
-    hashtag_pattern = r'''|^(#[\w_-]+)$'''
-    url_and_hashtag = URL_PATTERN + hashtag_pattern
-    url_and_hashtag_re = re.compile(url_and_hashtag)
+	hashtag_pattern = r'''|^(#[\w_-]+)$'''
+	url_and_hashtag = URL_PATTERN + hashtag_pattern
+	url_and_hashtag_re = re.compile(url_and_hashtag)
 
 
-    return Tokenizer(nlp.vocab, prefix_search=prefix_re.search,
-                                suffix_search=suffix_re.search,
-                                infix_finditer=infix_re.finditer,
-                                token_match=url_and_hashtag_re.match)
+	return Tokenizer(nlp.vocab, prefix_search=prefix_re.search,
+								suffix_search=suffix_re.search,
+								infix_finditer=infix_re.finditer,
+								token_match=url_and_hashtag_re.match)
 
 
 def is_headline_already_listed(headline, headlines):
@@ -228,12 +235,12 @@ periodicos["elpais"] = [
 ]
 
 periodicos["efe"] = [
-    ("https://www.efe.com/efe/espana/1/rss", "portada"),
-    ("https://www.efesalud.com/feed/noticias/", "salud"),
-    ("https://www.efeagro.com/feed/?post_type=noticia", "medio ambiente"),
-    ("https://www.efeminista.com/feed/", "feminismo"),
-    ("https://www.efetur.com/feed/?post_type=noticia", "viajes"),
-    #("https://euractiv.es/feed", "internacional")
+	("https://www.efe.com/efe/espana/1/rss", "portada"),
+	("https://www.efesalud.com/feed/noticias/", "salud"),
+	("https://www.efeagro.com/feed/?post_type=noticia", "medio ambiente"),
+	("https://www.efeminista.com/feed/", "feminismo"),
+	("https://www.efetur.com/feed/?post_type=noticia", "viajes"),
+	#("https://euractiv.es/feed", "internacional")
 ]
 
 periodicos["elconfidencial"] = [
@@ -432,53 +439,96 @@ if __name__ == "__main__":
 	news = list()
 	seen_urls = set() # este set sirve para controlar que noticias ya han sido añadidas
 	for rss, categoria in periodicos[my_newspaper]:
-		feed = feedparser.parse(rss)
-		print(rss)
-		for j in feed["entries"]:
-			if not "links" in j:
-				continue
-			url = j["links"][0]["href"]
-			if my_newspaper not in url:
-				continue
-			if my_newspaper == "lavanguardia" or my_newspaper == "20minutos": # we skip articles from la vanguardia or 20min whose feed summary are in catalan
-				summary = j["title"] + ". " + j['summary'] if "summary" in j and len(j['summary'])>10 else j["title"]
-				mylang = detect(summary)
-				if mylang == "ca":
-					print(summary)
+		if my_newspaper == "lavanguardia":
+			data = getxml(rss)
+			for elem in data["NewsML"]["NewsItem"]:
+				try:
+					url = elem["NewsLines"]["DeriveredFrom"]
 					print(url)
+					date = elem["NewsManagement"]["FirstCreated"]
+					title = elem["NewsLines"]["HeadLine"]
+					description = elem["NewsLines"]["Description"] if elem["NewsLines"]["Description"] else "" 
+					summary = title + description
+					author = elem["NewsLines"]["ByLine"] if "ByLine" in elem["NewsLines"] else None
+					if my_newspaper not in url:
+						continue		
+					mylang = detect(summary)
+					if mylang == "ca":
+						print(summary)
+						print(url)
+						continue
+						"""
+						detected = translator.detect(summary)
+						language = detected.lang
+						if language == "ca":
+							continue
+						"""
+					text, publish_date = get_text_date(url)
+					if text and "Inicia sesi\u00f3n para seguir leyendo" not in text and "\n\nPREMIUM\n\n" not in text and  "Para seguir leyendo, hazte Premium" not in text and "Publirreportaje\n" not in text and "En 20Minutos buscamos las mejores ofertas de" not in text and "/el-observatorio/" not in url and not url.startswith("https://cat.elpais.com") and "que-ver-hoy-en-tv" not in url and "/encatala/" not in url and "/horoscopo-" not in url and "vodafone.es" not in url and "/escaparate/" not in url and "/mingote/" not in url and "/ultima-hora-" not in url and "/el-roto.html" not in url and "última hora" not in title and "Podcast |" not in title and "DIRECTO |" not in title and "/audiencias-canales/" not in url: # newspaper successfully parsed the article and it's not catalan edition
+						print(url)
+						item = dict()
+						item["text"] = text
+						#item["id"] = time.time()
+						item["title"] = title
+						url = furl.furl(url).remove(args=True, fragment=True).url
+						item["url"] = url
+						rss_date = dateparser.parse(date)
+						item["date"] = rss_date.strftime("%A, %d %B %Y")
+						item["newspaper"] = my_newspaper
+						item["categoria"] = categoria
+						if not already_crawled['url'].str.contains(url).any() and item["url"] not in seen_urls and (not author or "EFE" not in author or "EP" "author"):
+							news.append(item)
+							seen_urls.add(url)
+				except Exception as e: 
+					print(e)
+		else:
+			feed = feedparser.parse(rss)
+			print(rss)
+			for j in feed["entries"]:
+				if not "links" in j:
 					continue
-				"""
-				detected = translator.detect(summary)
-				language = detected.lang
-				if language == "ca":
+				url = j["links"][0]["href"]
+				if my_newspaper not in url:
 					continue
-				"""
-			text, publish_date = get_text_date(url)
-			if text and "Inicia sesi\u00f3n para seguir leyendo" not in text and "\n\nPREMIUM\n\n" not in text and  "Para seguir leyendo, hazte Premium" not in text and "Publirreportaje\n" not in text and "En 20Minutos buscamos las mejores ofertas de" not in text and "/el-observatorio/" not in url and not url.startswith("https://cat.elpais.com") and "que-ver-hoy-en-tv" not in url and "/encatala/" not in url and "/horoscopo-" not in url and "vodafone.es" not in url and "/escaparate/" not in url and "/mingote/" not in url and "/ultima-hora-" not in url and "/el-roto.html" not in url and "última hora" not in j["title"] and "Podcast |" not in j["title"] and "DIRECTO |" not in j["title"] and "/audiencias-canales/" not in url: # newspaper successfully parsed the article and it's not catalan edition
-				print(url)
-				item = dict()
-				item["text"] = text
-				#item["id"] = time.time()
-				item["title"] = j["title"]
-				url = furl.furl(url).remove(args=True, fragment=True).url
-				item["url"] = url
-				if 'published' in j:
-					date = j['published']
-				else:
-					continue
-				rss_date = dateparser.parse(date)
-				item["date"] = rss_date.strftime("%A, %d %B %Y")
-				item["newspaper"] = my_newspaper
-				item["categoria"] = categoria
-				#date=datetime.strptime(item["date"], '%a, %d %b %Y %H:%M:%S %z')
-				lapsed_days = (today-rss_date).days # time diff between now and the rss date
-				if publish_date: # and my_newspaper == "elpais":
-					lapsed_days_2 = (today.date()-publish_date.date()).days # time diff between rss date and original pubDate
-				else:
-					lapsed_days_2 = lapsed_days
-				if not already_crawled['url'].str.contains(url).any() and item["url"] not in seen_urls and ('author' not in j or "EFE" not in j['author'] or "Europa Press" not in j['author'] or my_newspaper == "efe"):
-					news.append(item)
-					seen_urls.add(url)
+				if my_newspaper == "lavanguardia" or my_newspaper == "20minutos": # we skip articles from la vanguardia or 20min whose feed summary are in catalan
+					summary = j["title"] + ". " + j['summary'] if "summary" in j and len(j['summary'])>10 else j["title"]
+					mylang = detect(summary)
+					if mylang == "ca":
+						print(summary)
+						print(url)
+						continue
+					"""
+					detected = translator.detect(summary)
+					language = detected.lang
+					if language == "ca":
+						continue
+					"""
+				text, publish_date = get_text_date(url)
+				if text and "Inicia sesi\u00f3n para seguir leyendo" not in text and "\n\nPREMIUM\n\n" not in text and  "Para seguir leyendo, hazte Premium" not in text and "Publirreportaje\n" not in text and "En 20Minutos buscamos las mejores ofertas de" not in text and "/el-observatorio/" not in url and not url.startswith("https://cat.elpais.com") and "que-ver-hoy-en-tv" not in url and "/encatala/" not in url and "/horoscopo-" not in url and "vodafone.es" not in url and "/escaparate/" not in url and "/mingote/" not in url and "/ultima-hora-" not in url and "/el-roto.html" not in url and "última hora" not in j["title"] and "Podcast |" not in j["title"] and "DIRECTO |" not in j["title"] and "/audiencias-canales/" not in url: # newspaper successfully parsed the article and it's not catalan edition
+					print(url)
+					item = dict()
+					item["text"] = text
+					#item["id"] = time.time()
+					item["title"] = j["title"]
+					url = furl.furl(url).remove(args=True, fragment=True).url
+					item["url"] = url
+					if 'published' in j:
+						date = j['published']
+					else:
+						continue
+					rss_date = dateparser.parse(date)
+					item["date"] = rss_date.strftime("%A, %d %B %Y")
+					item["newspaper"] = my_newspaper
+					item["categoria"] = categoria
+					#date=datetime.strptime(item["date"], '%a, %d %b %Y %H:%M:%S %z')
+					lapsed_days = (today-rss_date).days # time diff between now and the rss date
+					if publish_date: # and my_newspaper == "elpais":
+						lapsed_days_2 = (today.date()-publish_date.date()).days # time diff between rss date and original pubDate
+					else:
+						lapsed_days_2 = lapsed_days
+					if not already_crawled['url'].str.contains(url).any() and item["url"] not in seen_urls and ('author' not in j or "EFE" not in j['author'] or "Europa Press" not in j['author'] or my_newspaper == "efe"):
+						news.append(item)
+						seen_urls.add(url)
 
 	#with open(path+'extra.jsonl', 'a') as f:
 	try:
@@ -497,4 +547,3 @@ if __name__ == "__main__":
 				write_to_db(mydb, item["url"], item["title"], item["date"], item["newspaper"], item["categoria"], number_of_words)
 			except Exception as e: 
 				print(e)
-
