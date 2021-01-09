@@ -4,7 +4,6 @@ from collections import defaultdict
 from decimal import ROUND_HALF_UP, Context
 import tabulate
 
-EXPAND = {"fn": "False Negative", "tp": "True Positive ", "fp": "False Positive"}
 parser = argparse.ArgumentParser(description="A script for span level evaluation of seq labeling files in BIO format")
 parser.add_argument('--predicted', type=str, help='Path to file with predicted data')
 parser.add_argument('--goldstandard', type=str, help='Path to file with goldstandard data')
