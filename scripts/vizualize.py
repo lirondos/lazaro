@@ -112,7 +112,7 @@ def anglicisms_per_section(section):
     fig.show()
 
 def build_graph(dataframe, list_of_words, since_week, since_year, my_title):
-    df = dataframe.query("week>@since_week and year==@since_year and borrowing==@list_of_words")
+    df = dataframe.query("week>@since_week and year>=@since_year and borrowing==@list_of_words")
     df = df.loc[:, ['borrowing', 'my_week', 'year','freq']]
     #df["my_week"] = df.year*100+df.weekofyear
     #df['my_week'] = pd.to_datetime((df.year+df.my_week).astype(str) + '0', format='%Y%W%w')
