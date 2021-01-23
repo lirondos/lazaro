@@ -114,10 +114,11 @@ def get_text_date(url):
 		article.html = re.sub(r"<section class=\"more_info .+?</section>", "", article.html)
 		article.html = re.sub(r"<span class=\"EPS-000.+?eps</span>", "", article.html)
 		article.html = re.sub(r"<span class=\"f_a | color_black uppercase light.+?</span>", "", article.html)
-		article.html = re.sub(r"<i>Puedes seguir a .+?[nN]ewsletter.</i>", "", article.html) # pie de Materia
+		article.html = re.sub(r"<i>Puedes seguir a .+?[nN]ewsletter.?</i>", "", article.html) # pie de Materia
+		article.html = re.sub(r"Puedes seguir a .+?(<i>)? *[nN]ewsletter</a>", "", article.html) # pie de Materia
+		article.html = re.sub(r"<i>Puedes seguir a .+?(<i>)? *[nN]ewsletter</i></a>", "", article.html) # pie de Materia
 		article.html = re.sub(r"<i>Puedes escribirnos a .+?[Nn]ewsletter</i></a>", "", article.html) # pie de Materia nuevo
 		article.html = re.sub(r"<p><em><strong>¿Nos ayudas?.+?</p>", "", article.html) # Kiko Llaneras
-		article.html = re.sub(r"(<i>)?Puedes seguir a .+?(<i>)? *[nN]ewsletter(</i>)?</a>", "", article.html) # pie de Materia
 		article.html = re.sub(r"<p class=\"nota_pie\".+?a nuestra <em>newsletter</em>\.?(</span>)*</p>", "", article.html) # pie de Planeta Futuro
 		article.html = re.sub(r"<i>Puedes escribirnos a.+?<i>[nN]ewsletter</i></a>", "", article.html) # pie de Materia
 		article.html = re.sub(r"<p class=""><i>Puedes escribirnos a.+?</p>", "", article.html)
