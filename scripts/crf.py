@@ -344,10 +344,10 @@ def write_to_db(mydb, ent, label, context, newspaper, url, date, categoria,start
     mycursor = mydb.cursor()
     date_object = datetime.strptime(date, '%A, %d %B %Y').date()
     date_str = date_object.strftime('%Y-%m-%d')
-    lemma = singularize(ent) if not ent.endswith("data") and not ent.endswith(
-        "glamour") and not ent.endswith("ess") else borrowing
+    mylemma = singularize(ent) if not ent.endswith("data") and not ent.endswith(
+        "glamour") and not ent.endswith("ess") else ent
     sql = "INSERT INTO t_anglicisms (borrowing,lang,context,newspaper,url,date,section,start_token,end_token, new_date, lemma) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    val = (ent, label, context, newspaper, url, date, categoria,start, end, date_str, lemma)
+    val = (ent, label, context, newspaper, url, date, categoria,start, end, date_str, mylemma)
     mycursor.execute(sql, val)
 
     mydb.commit()
