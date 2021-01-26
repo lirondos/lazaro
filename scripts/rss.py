@@ -301,7 +301,7 @@ periodicos["lavanguardia"] = [
 ("https://www.lavanguardia.com/newsml/internacional.xml", "internacional" ),
 ("https://www.lavanguardia.com/newsml/politica.xml", "espana"),
 ("https://www.lavanguardia.com/newsml/vida.xml", "salud"),
-("https://www.lavanguardia.com/newsml/deportes.xml", "deportes"),
+("https://www.lavanguardia.com/newsml/deportes.xml", "deporte"),
 ("https://www.lavanguardia.com/newsml/economia.xml", "economia"),
 ("https://www.lavanguardia.com/newsml/opinion.xml", "opinion"),
 ("https://www.lavanguardia.com/newsml/cultura.xml", "cultura"),
