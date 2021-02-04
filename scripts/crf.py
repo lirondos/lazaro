@@ -345,7 +345,7 @@ def write_to_db(mydb, ent, label, context, newspaper, url, date, categoria,start
     date_object = datetime.strptime(date, '%A, %d %B %Y').date()
     date_str = date_object.strftime('%Y-%m-%d')
     mylemma = singularize(ent) if not ent.endswith("a") and not ent.endswith(
-            "glamour") and not ent.endswith("ess") and not ent.endswith("our") else ent
+            "glamour") and not ent.endswith("ss") and not ent.endswith("our") else ent
     if mylemma.endswith("ies"): # veggies, birdies
         mylemma = ent[:-1]
     sql = "INSERT INTO t_anglicisms (borrowing,lang,context,newspaper,url,date,section,start_token,end_token, new_date, lemma) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"

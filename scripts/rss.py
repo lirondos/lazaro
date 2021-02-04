@@ -168,7 +168,6 @@ periodicos["probando"] = [
 	]
 
 periodicos["eldiario"] = [
-("https://www.eldiario.es/rss/", "portada"),
 ("https://www.eldiario.es/rss/category/section/100002/", "economia"),
 ("https://www.eldiario.es/rss/category/section/100000/", "politica"),
 ("https://www.eldiario.es/rss/category/section/100004/", "cultura"),
@@ -214,12 +213,11 @@ periodicos["eldiario"] = [
 ("https://www.eldiario.es/rss/category/section/513148/", "estilo de vida"),
 ("https://www.eldiario.es/rss/category/section/513407/", "estilo de vida"),
 ("https://www.eldiario.es/rss/category/section/508002/",  "opinion"),
+("https://www.eldiario.es/rss/", "portada")
 #"https://www.eldiario.es/rss/norte/",
 #"https://www.eldiario.es/rss/eldiarioex/"
 ]
 periodicos["elpais"] = [
-("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", "portada"),
-("https://ep00.epimg.net/rss/tags/ultimas_noticias.xml", "portada"),
 #"https://ep00.epimg.net/rss/tags/noticias_mas_vistas.xml",
 ("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/internacional/portada", "internacional"),
 #("https://ep00.epimg.net/rss/elpais/opinion.xml", "opinion"),
@@ -233,10 +231,12 @@ periodicos["elpais"] = [
 ("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/television/portada", "television"),
 ("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/sociedad/portada", "sociedad"),
 ("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/gente/portada", "gente"),
+("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", "portada"),
+("https://ep00.epimg.net/rss/tags/ultimas_noticias.xml", "portada"),
 ]
 
 periodicos["efe"] = [
-	("https://www.efe.com/efe/espana/1/rss", "portada"),
+	("https://www.efe.com/efe/espana/1/rss", "espana"),
 	("https://www.efesalud.com/feed/noticias/", "salud"),
 	("https://www.efeagro.com/feed/?post_type=noticia", "medio ambiente"),
 	("https://www.efeminista.com/feed/", "feminismo"),
@@ -297,9 +297,8 @@ periodicos["elconfidencial"] = [
 ]
 
 periodicos["lavanguardia"] = [
-("https://www.lavanguardia.com/newsml/home.xml", "portada"),
 ("https://www.lavanguardia.com/newsml/internacional.xml", "internacional" ),
-("https://www.lavanguardia.com/newsml/politica.xml", "espana"),
+("https://www.lavanguardia.com/newsml/politica.xml", "politica"),
 ("https://www.lavanguardia.com/newsml/vida.xml", "salud"),
 ("https://www.lavanguardia.com/newsml/deportes.xml", "deporte"),
 ("https://www.lavanguardia.com/newsml/economia.xml", "economia"),
@@ -316,6 +315,7 @@ periodicos["lavanguardia"] = [
 ("https://www.lavanguardia.com/newsml/de-moda.xml", "moda"),
 ("https://www.lavanguardia.com/newsml/vivo.xml", "estilo de vida"),
 ("https://www.lavanguardia.com/newsml/comer.xml", "estilo de vida"),
+("https://www.lavanguardia.com/newsml/home.xml", "portada"),
 ]
 """
 # viejo rss de La Vanguardia
@@ -343,7 +343,6 @@ periodicos["lavanguardia"] = [
 ]
 """
 periodicos["elmundo"] = [
-("https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml", "portada"),
 ("https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml", "espana"),
 ("https://e00-elmundo.uecdn.es/elmundo/rss/internacional.xml", "internacional"),
 ("https://e00-elmundo.uecdn.es/elmundo/rss/economia.xml", "economia"),
@@ -358,10 +357,9 @@ periodicos["elmundo"] = [
 ("https://e00-elmundo.uecdn.es/elmundodeporte/rss/golf.xml", "deporte"),
 ("https://e00-elmundo.uecdn.es/elmundodeporte/rss/tenis.xml", "deporte"),
 ("https://e00-elmundo.uecdn.es/elmundomotor/rss/portada.xml", "motor"),
+("https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml", "portada"),
 ]
 periodicos["abc"] = [
-("https://www.abc.es/rss/feeds/abcPortada.xml", "portada"),
-("https://www.abc.es/rss/feeds/abc_ultima.xml", "portada"),
 ("https://www.abc.es/rss/feeds/abc_EspanaEspana.xml", "espana"),
 ("https://www.abc.es/rss/feeds/abc_CasasReales.xml", "gente"),
 ("https://www.abc.es/rss/feeds/abc_Internacional.xml", "internacional"),
@@ -396,9 +394,10 @@ periodicos["abc"] = [
 ("https://www.abc.es/rss/feeds/abc_Libros.xml", "cultura"),
 ("https://www.abc.es/rss/feeds/abc_Toros.xml", "toros"),
 ("https://www.abc.es/rss/feeds/abc_PlayCine.xml", "cultura"),
+("https://www.abc.es/rss/feeds/abcPortada.xml", "portada"),
+("https://www.abc.es/rss/feeds/abc_ultima.xml", "portada"),
 ]
 periodicos["20minutos"] = [
-("https://www.20minutos.es/rss/", "portada"),
 ("https://www.20minutos.es/rss/gente/", "gente"),
 ("https://www.20minutos.es/rss/nacional/", "espana"),
 ("https://www.20minutos.es/rss/internacional/", "internacional"),
@@ -422,6 +421,7 @@ periodicos["20minutos"] = [
 ("https://www.20minutos.es/rss/medio-ambiente/", "medio ambiente"),
 ("https://www.20minutos.es/rss/tecnologia/", "tecnologia"),
 ("https://www.20minutos.es/rss/gastronomia/", "estilo de vida"),
+("https://www.20minutos.es/rss/", "portada"),
 ]
 
 
