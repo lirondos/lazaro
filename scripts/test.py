@@ -259,11 +259,11 @@ def print_results(prf1):
 
 def load_data(path, include_other, is_predict = False):
     mylist = list()
-    with open(path, encoding="utf8") as f:
+    with open(path.rstrip(), encoding="utf8") as f:
         lines = f.readlines()
     for line in lines:
         try:
-            json_as_dict = json.loads(line)
+            json_as_dict = json.loads(line.rstrip())
             doc = ingest_json_document(json_as_dict, NLP, include_other, is_predict)
             mylist.append(doc)
         except ValueError as err:
