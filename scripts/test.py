@@ -91,10 +91,7 @@ def custom_tokenizer(nlp):
 
 def ingest_json_document(doc_json: Mapping, nlp: Language, include_other: bool, is_predict = False) -> Doc:
     if is_predict:
-        if doc_json["annotation_approver"] == "lazaro":
-            doc = nlp(doc_json["text"])
-        else:
-            doc = nlp(doc_json["title"] + "\n" + doc_json["text"])
+        doc = nlp(doc_json["title"] + "\n" + doc_json["text"])
         doc.user_data["date"] = doc_json["date"]
         doc.user_data["url"] = doc_json["url"]
         doc.user_data["newspaper"] = doc_json["newspaper"]
