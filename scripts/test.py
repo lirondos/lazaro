@@ -94,8 +94,8 @@ def ingest_json_document(doc_json: Mapping, nlp: Language, include_other: bool, 
         doc = nlp(doc_json["title"] + "\n" + doc_json["text"])
         doc.user_data["date"] = doc_json["date"]
         doc.user_data["url"] = doc_json["url"]
-        doc.user_data["newspaper"] = doc_json["newspaper"]
-        doc.user_data["categoria"] = doc_json["categoria"]
+        doc.user_data["source"] = doc_json["newspaper"]
+        doc.user_data["category"] = doc_json["categoria"]
         doc.ents = []
         return doc
     else:
