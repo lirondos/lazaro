@@ -349,7 +349,10 @@ def write_predictions(predicted_docs) -> None:
                 labels.append([mydoc[ent.start].idx, mydoc[ent.end].idx, ent.label_])
             labels_tokens.append([ent.start, ent.end, ent.label_])
             myspans.append(ent.text)
-        mydict = {"text": mydoc.text, "date": mydoc.user_data["date"], "annotation_approver": "lazaro", "newspaper": mydoc.user_data["newspaper"], "categoria": mydoc.user_data["categoria"], "url": mydoc.user_data["url"], "labels": labels, "labels_tokens": labels_tokens, "spans": myspans}
+        if args.has_goldstandard:
+            mydict = {"text": mydoc.text, "annotation_approver": "lazaro", "labels": labels, "labels_tokens": labels_tokens, "spans": myspans}
+        else:
+            mydict = {"text": mydoc.text, "date": mydoc.user_data["date"], "annotation_approver": "lazaro", "newspaper": mydoc.user_data["newspaper"], "categoria": mydoc.user_data["categoria"], "url": mydoc.user_data["url"], "labels": labels, "labels_tokens": labels_tokens, "spans": myspans}
         with open(args.predicted, 'a', encoding = "utf-8") as f:
             f.write(json.dumps(mydict)+'\n')
 
