@@ -58,6 +58,8 @@ parser.add_argument('--include_other', action='store_true', default=True, help='
 parser.add_argument('--collapse_tags', action='store_true', default=False, help='Whether to collapse ENGLISH and OTHER tags into a single LOANWORD tag  (default True)')
 parser.add_argument('--embeddings', type=str, default="w2v_SBWC", help = 'Embeddings to be used: w2v_SBWC, glove_SBWC, fasttext_SBWC, fasttext_SUC, fasttext_wiki, spacy (default is spacy)')
 parser.add_argument('--scaling', type=float, default=0.5, help = 'Scaling for word emebeddings (default 1.0)')
+parser.add_argument('--has_goldstandard', action='store_true', default=False, help='Whether the test set has gold annotation and we want to evaluate')
+
 
 
 
@@ -91,11 +93,11 @@ def custom_tokenizer(nlp):
 
 def ingest_json_document(doc_json: Mapping, nlp: Language, include_other: bool, is_predict = False) -> Doc:
     if is_predict:
-        doc = nlp(doc_json["title"] + "\n" + doc_json["text"])
-        doc.user_data["date"] = doc_json["date"]
-        doc.user_data["url"] = doc_json["url"]
-        doc.user_data["newspaper"] = doc_json["source"]
-        doc.user_data["categoria"] = doc_json["category"]
+        doc = nlp(doc_json["title"] + "\n" + doc_json["text"]) if "title" in doc_json else nlp(doc_json["text"])
+        doc.user_data["date"] = doc_json["date"] if "date" in doc_json else ""
+        doc.user_data["url"] = doc_json["url"] if "url" in doc_json else ""
+        doc.user_data["newspaper"] = doc_json["source"] if "source" in doc_json else ""
+        doc.user_data["categoria"] = doc_json["category"] if "category" in doc_json else ""
         doc.ents = []
         return doc
     else:
@@ -365,9 +367,10 @@ if __name__ == "__main__":
     test = list()
     with open(args.test, "r", encoding="utf-8") as f:
         for line in f:
-            test.extend(load_data(line, args.include_other, is_predict=True))
+            test.extend(load_data(line, args.include_other, is_predict=not args.has_goldstandard))
     predicted_docs = predict(args.model, args.window, test)
-    prf1, predictions = evaluate(predicted_docs, test)
-    print(predictions)
-    print_results(prf1)
+    if args.has_goldstandard:
+        prf1, predictions = evaluate(predicted_docs, test)
+        #print(predictions)
+        print_results(prf1)
     write_predictions(predicted_docs)
