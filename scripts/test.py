@@ -374,6 +374,6 @@ if __name__ == "__main__":
     predicted_docs = predict(args.model, args.window, test)
     if args.has_goldstandard:
         prf1, predictions = evaluate(predicted_docs, test)
-        #print(predictions)
+        print(predictions)
         print_results(prf1)
     write_predictions(predicted_docs)
