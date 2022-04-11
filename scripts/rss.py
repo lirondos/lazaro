@@ -483,7 +483,13 @@ if __name__ == "__main__":
 				except Exception as e: 
 					print(e)
 		else:
-			feed = feedparser.parse(rss)
+			if my_newspaper == "abc": # Fixes broken rss feed from ABC
+				headers = []
+				web_page = requests.get(rss, headers=headers, allow_redirects=True)
+				content = web_page.content.strip()  # drop the first newline (if any)
+				feed = feedparser.parse(content)
+			else:
+				feed = feedparser.parse(rss)
 			print(rss)
 			for j in feed["entries"]:
 				if not "links" in j:
