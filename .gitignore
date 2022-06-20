@@ -10,3 +10,6 @@ embeddings_db/**
 tobepredicted/**
 tobetweeted/**
 .idea/**
+logs/**
+data/anglicisms_index.csv
+data/articles_index.csv
