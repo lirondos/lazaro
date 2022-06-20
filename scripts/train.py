@@ -32,7 +32,7 @@ sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 print(sys.path)
 #sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature, TrigramFeature, QuotationFeature, WordEnding, POStagFeature, WordVectorFeature, WordShapeFeature, WordVectorFeatureSpacy, BigramFeature, IsInDict, GraphotacticFeature, LemmaFeature, DigitFeature, PunctuationFeature, WordVectorFeatureNerpy, WordProbability, WordVectorFeatureNorm, SentencePositionFeature, BrownClusterFeature, HigherEnglishProbability, QuatrigramFeature, AllCapsFeature, PerplexityFeature, URLFeature, EmailFeature, TwitterFeature
-from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder
+from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder, CRFsuiteEntityRecognizer_CoNLL
 from constants import ANGLICISM_INDEX, TO_BE_TWEETED_PATTERN, AUTOMATICALLY_ANNOTATED_FOLDER, TO_BE_PREDICTED_FOLDER, CORPUS
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
 from utils import PRF1
@@ -62,6 +62,9 @@ parser.add_argument('--verbose', action='store_true', help='Prints list of false
 parser.add_argument('--stats', action='store_true', default=False, help='Print corpus numbers (number of tokens, anglicisms, headlines, etc)  (default False)')
 parser.add_argument('--include_other', action='store_true', default=True, help='Whether to include OTHER tag  (default False)')
 parser.add_argument('--collapse_tags', action='store_true', default=False, help='Whether to collapse ENGLISH and OTHER tags into a single LOANWORD tag  (default True)')
+parser.add_argument('--conll_format', action='store_true', default=True, help='Whether is CoNLL format  (default False)')
+
+
 
 
 
@@ -73,9 +76,11 @@ TAG_COLLAPSE = {"ENG":"BORROWING", "OTHER":"BORROWING"}
 
 def custom_tokenizer(nlp):
     # contains the regex to match all sorts of urls:
-    prefix_re = re.compile(spacy.util.compile_prefix_regex(Language.Defaults.prefixes).pattern.replace("#", "!"))
+    prefix_re = re.compile(spacy.util.compile_prefix_regex(Language.Defaults.prefixes + (r'''^-''',)).pattern.replace("#", "!")) 
+    # 
     infix_re = spacy.util.compile_infix_regex(Language.Defaults.infixes)
-    suffix_re = spacy.util.compile_suffix_regex(Language.Defaults.suffixes)
+    suffix_re = spacy.util.compile_suffix_regex(Language.Defaults.suffixes + (r'''-$''',))
+    # 
 
     #special_cases = {":)": [{"ORTH": ":)"}]}
     #prefix_re = re.compile(r'''^[[("']''')
@@ -92,6 +97,7 @@ def custom_tokenizer(nlp):
                                 suffix_search=suffix_re.search,
                                 infix_finditer=infix_re.finditer,
                                 token_match=url_and_hashtag_re.match)
+
 
 def ingest_json_document(doc_json: Mapping, nlp: Language, include_other: bool, is_predict = False) -> Doc:
     if is_predict:
@@ -153,6 +159,41 @@ def load_data(path, include_other, is_predict = False):
         except ValueError as err:
             print(line)
     return mylist
+    
+def load_data_conll(path, is_test = False):
+    mylist = list()
+    with open(path, encoding="utf8") as f:
+        lines = f.readlines()
+    sentence = list()
+    tags = list()
+    for line in lines:
+        if line.strip():
+            if is_test:
+                sentence.append(line.split()[0])
+            else:
+                el = line.split()
+                if len(el) == 2:
+                    sentence.append(el[0])
+                    tags.append(el[1])
+                else:
+                    continue
+        else:
+            doc = Doc(NLP.vocab, words=sentence)
+            if is_test:
+                mylist.append(doc)
+            else:
+                mylist.append((doc, tags))
+                tags = list()
+            sentence = list()
+    doc = Doc(NLP.vocab, words=sentence)
+    if is_test:
+        mylist.append(doc)
+    else:
+        #print(doc)
+        #print(tags)
+        mylist.append((doc, tags))
+    print(len(mylist))
+    return mylist
 
 
 def train(train_set, max_iterations, c1, c2, encoder, window_size) -> None:
@@ -170,8 +211,10 @@ def train(train_set, max_iterations, c1, c2, encoder, window_size) -> None:
                     EmailFeature(),
                     TwitterFeature()
                     ]
-
-    crf = CRFsuiteEntityRecognizer(WindowedTokenFeatureExtractor(features,window_size,), ENCODER_DICT[encoder])
+    if args.conll_format:
+        crf = CRFsuiteEntityRecognizer_CoNLL(WindowedTokenFeatureExtractor(features,window_size,))
+    else:
+        crf = CRFsuiteEntityRecognizer(WindowedTokenFeatureExtractor(features,window_size,), ENCODER_DICT[encoder])
     if args.verbose: print("Training...")
     crf.train(train_set, "lbfgs", {"max_iterations":  max_iterations, 'c1': c1, 'c2': c2, 'delta': args.delta}, args.model_path)
 
@@ -187,7 +230,14 @@ if __name__ == "__main__":
     if args.verbose: print(args)
     if args.verbose: print("Loading data...")
     training = list()
-    with open(args.training, "r", encoding="utf-8") as f:
-        for line in f:
-            training.extend(load_data(line, args.include_other))
+    if args.conll_format:
+        with open(args.training, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.startswith("#"):
+                    print(line)
+                    training.extend(load_data_conll(line.rstrip()))
+    else:
+        with open(args.training, "r", encoding="utf-8") as f:
+            for line in f:
+                training.extend(load_data(line, args.include_other))
     train(training, args.max_iterations, args.c1, args.c2, args.encoder, args.window)

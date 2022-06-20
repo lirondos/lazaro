@@ -31,7 +31,7 @@ import sys
 sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 #sys.path.append("/home/ealvarezmellado/lazaro/utils/")
 from utils2 import BiasFeature, TokenFeature, UppercaseFeature, TitlecaseFeature, TrigramFeature, QuotationFeature, WordEnding, POStagFeature, WordVectorFeature, WordShapeFeature, WordVectorFeatureSpacy, BigramFeature, IsInDict, GraphotacticFeature, LemmaFeature, DigitFeature, PunctuationFeature, WordVectorFeatureNerpy, WordProbability, WordVectorFeatureNorm, SentencePositionFeature, BrownClusterFeature, HigherEnglishProbability, QuatrigramFeature, AllCapsFeature, PerplexityFeature, URLFeature, EmailFeature, TwitterFeature
-from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder
+from utils2 import WindowedTokenFeatureExtractor, CRFsuiteEntityRecognizer, BILOUEncoder, BIOEncoder, IOEncoder, ScoringCounts, ScoringEntity, BMESEncoder, BIOESEncoder, CRFsuiteEntityRecognizer_CoNLL
 from constants import ANGLICISM_INDEX, TO_BE_TWEETED_PATTERN, AUTOMATICALLY_ANNOTATED_FOLDER, TO_BE_PREDICTED_FOLDER, CORPUS
 from utils import PUNC_REPEAT_RE, DIGIT_RE, UPPERCASE_RE, LOWERCASE_RE
 from utils import PRF1
@@ -58,7 +58,9 @@ parser.add_argument('--include_other', action='store_true', default=True, help='
 parser.add_argument('--collapse_tags', action='store_true', default=False, help='Whether to collapse ENGLISH and OTHER tags into a single LOANWORD tag  (default True)')
 parser.add_argument('--embeddings', type=str, default="w2v_SBWC", help = 'Embeddings to be used: w2v_SBWC, glove_SBWC, fasttext_SBWC, fasttext_SUC, fasttext_wiki, spacy (default is spacy)')
 parser.add_argument('--scaling', type=float, default=0.5, help = 'Scaling for word emebeddings (default 1.0)')
-parser.add_argument('--has_goldstandard', action='store_true', default=False, help='Whether the test set has gold annotation and we want to evaluate')
+parser.add_argument('--has_goldstandard', action='store_true', default=False, help='Whether the test set has gold annotation')
+parser.add_argument('--conll_format', action='store_true', default=True, help='Whether is CoNLL format  (default False)')
+parser.add_argument('--evaluate', action='store_true', default=False, help='Whether the test set has gold annotation')
 
 
 
@@ -71,9 +73,11 @@ TAG_COLLAPSE = {"ENG":"BORROWING", "OTHER":"BORROWING"}
 
 def custom_tokenizer(nlp):
     # contains the regex to match all sorts of urls:
-    prefix_re = re.compile(spacy.util.compile_prefix_regex(Language.Defaults.prefixes).pattern.replace("#", "!"))
+    prefix_re = re.compile(spacy.util.compile_prefix_regex(Language.Defaults.prefixes + (r'''^-''',)).pattern.replace("#", "!")) 
+    # 
     infix_re = spacy.util.compile_infix_regex(Language.Defaults.infixes)
-    suffix_re = spacy.util.compile_suffix_regex(Language.Defaults.suffixes)
+    suffix_re = spacy.util.compile_suffix_regex(Language.Defaults.suffixes + (r'''-$''',))
+    # 
 
     #special_cases = {":)": [{"ORTH": ":)"}]}
     #prefix_re = re.compile(r'''^[[("']''')
@@ -90,6 +94,7 @@ def custom_tokenizer(nlp):
                                 suffix_search=suffix_re.search,
                                 infix_finditer=infix_re.finditer,
                                 token_match=url_and_hashtag_re.match)
+
 
 def ingest_json_document(doc_json: Mapping, nlp: Language, include_other: bool, is_predict = False) -> Doc:
     if is_predict:
@@ -268,6 +273,39 @@ def load_data(path, include_other, is_predict = False):
         except ValueError as err:
             print(line)
     return mylist
+    
+def load_data_conll(path, is_test = False):
+    mylist = list()
+    with open(path, encoding="utf8") as f:
+        lines = f.readlines()
+    sentence = list()
+    tags = list()
+    for line in lines:
+        if line.strip():
+            if is_test:
+                sentence.append(line.split()[0])
+            else:
+                el = line.split()
+                if len(el) == 2:
+                    sentence.append(el[0])
+                    tags.append(el[1])
+                else:
+                    continue
+        else:
+            #doc = NLP(" ".join(sentence))
+            doc = Doc(NLP.vocab, words=sentence)
+            if is_test:
+                mylist.append(doc)
+            else:
+                mylist.append((doc, tags))
+                tags = list()
+            sentence = list()
+    doc = Doc(NLP.vocab, words=sentence)
+    if is_test:
+        mylist.append(doc)
+    else:
+        mylist.append((doc, tags))
+    return mylist
 
 def print_statistics(training, test) -> None:
     headlines_training = 0
@@ -308,7 +346,7 @@ def print_statistics(training, test) -> None:
     print(tabulate(table, headers=["", "Training", "Test"]))
 
 def predict(path_to_model, window_size, test_set) -> None:
-    features = [    #WordVectorFeatureNerpy(args.embeddings, args.scaling),
+    features = [    WordVectorFeatureNerpy(args.embeddings, args.scaling),
                     BiasFeature(),
                     TokenFeature(),
                     UppercaseFeature(),
@@ -322,8 +360,10 @@ def predict(path_to_model, window_size, test_set) -> None:
                     EmailFeature(),
                     TwitterFeature()
                     ]
-                    
-    crf = CRFsuiteEntityRecognizer(WindowedTokenFeatureExtractor(features,window_size,), ENCODER_DICT[args.encoder])
+    if args.conll_format:
+        crf = CRFsuiteEntityRecognizer_CoNLL(WindowedTokenFeatureExtractor(features,window_size,))
+    else:
+        crf = CRFsuiteEntityRecognizer(WindowedTokenFeatureExtractor(features,window_size,), ENCODER_DICT[args.encoder])
     crf.tagger = pycrfsuite.Tagger()
     crf.tagger.open(path_to_model)
 
@@ -333,7 +373,10 @@ def predict(path_to_model, window_size, test_set) -> None:
     test_set = copy.deepcopy(test_set)
     for doc in test_set:
         doc.ents = []
-    predicted = [crf(doc) for doc in test_set]
+    if args.conll_format:
+        predicted = [(doc, crf(doc)) for doc in test_set]
+    else:
+        predicted = [crf(doc) for doc in test_set]
     return predicted
 
     
@@ -349,7 +392,7 @@ def write_predictions(predicted_docs) -> None:
                 labels.append([mydoc[ent.start].idx, mydoc[ent.end].idx, ent.label_])
             labels_tokens.append([ent.start, ent.end, ent.label_])
             myspans.append(ent.text)
-        if args.has_goldstandard:
+        if args.has_goldstandard or args.conll_format:
             mydict = {"text": mydoc.text, "annotation_approver": "lazaro", "labels": labels, "labels_tokens": labels_tokens, "spans": myspans}
         else:
             mydict = {"text": mydoc.text, "date": mydoc.user_data["date"], "annotation_approver": "lazaro", "newspaper": mydoc.user_data["newspaper"], "categoria": mydoc.user_data["categoria"], "url": mydoc.user_data["url"], "labels": labels, "labels_tokens": labels_tokens, "spans": myspans}
@@ -368,12 +411,22 @@ if __name__ == "__main__":
     if args.verbose: print("Loading test data...")
 
     test = list()
-    with open(args.test, "r", encoding="utf-8") as f:
-        for line in f:
-            test.extend(load_data(line, args.include_other, is_predict=not args.has_goldstandard))
+    if args.conll_format:
+        test.extend(load_data_conll(args.test, is_test=True))
+    else:
+        with open(args.test, "r", encoding="utf-8") as f:
+            for line in f:
+                test.extend(load_data(line, args.include_other, is_predict=not args.has_goldstandard))
     predicted_docs = predict(args.model, args.window, test)
-    if args.has_goldstandard:
+    if args.evaluate:
         prf1, predictions = evaluate(predicted_docs, test)
         print(predictions)
         print_results(prf1)
-    write_predictions(predicted_docs)
+    if args.conll_format:
+        with open(args.predicted, "a", encoding = "utf-8") as f:
+            for tokens, labels in predicted_docs:
+                for token, label in zip(tokens, labels):
+                    f.write(token.text + "\t" + label + "\n")
+                f.write("\n")
+    else:
+        write_predictions(predicted_docs)

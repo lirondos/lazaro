@@ -59,6 +59,59 @@ class WindowedTokenFeatureExtractor:
                         extractor.extract(tokens[i + j], i + j, j, tokens, dict_feat)
             featurized.append(dict_feat)
         return featurized
+        
+class CRFsuiteEntityRecognizer_CoNLL:
+    def __init__(
+        self, feature_extractor: WindowedTokenFeatureExtractor) -> None:
+        self.feature_extractor = feature_extractor
+        #self._encoder = encoder
+    """
+    @property
+    def encoder(self) -> EntityEncoder:
+        return self._encoder
+
+    def set_encoder(self, encoder):
+        self._encoder = encoder
+    """
+    def train(self, corpus, algorithm: str, params: dict, path: str, verbose = False) -> None:
+        trainer = pycrfsuite.Trainer(algorithm, verbose=verbose)
+        trainer.set_params(params)
+        for tokens, labels in corpus:
+            #tokens = [token for token in doc if token.text.strip()]
+            #print(tokens)
+            features = self.feature_extractor.extract(tokens)
+            #for feature in features:
+            #print(feature)
+            #features = self.feature_extractor.extract([token.text for token in tokens])
+            #encoded_labels = self._encoder.encode(tokens)
+            #print(features)
+            #print(list(zip(tokens, labels)))
+            try:
+                trainer.append(features, labels)
+            except Exception as e:
+                print(e)
+                print(tokens)
+                print(labels)
+                print(len(tokens))
+                print(len(labels))
+        trainer.train(path)
+        self.tagger = pycrfsuite.Tagger()
+        self.tagger.open(path)
+
+    def __call__(self, doc):
+        tokens = list(doc)
+        if not self.tagger:
+            raise ValueError('train() method should be called first!')
+        #tokens = doc[0]
+        tags = self.predict_labels(tokens)
+        return tags
+
+    def predict_labels(self, doc) -> List[str]:
+        tokens = list(doc)
+        features = self.feature_extractor.extract(tokens)
+        #features = self.feature_extractor.extract([str(token) for token in tokens])
+        tags = self.tagger.tag(features)
+        return tags
 
 class CRFsuiteEntityRecognizer:
     def __init__(
