@@ -13,3 +13,4 @@ tobetweeted/**
 logs/**
 data/anglicisms_index.csv
 data/articles_index.csv
+scripts/lemmatize_db.py
