@@ -12,3 +12,46 @@ PATH_TO_VIZ = "/home/ealvarezmellado/lazaro/web/viz/"
 
 TO_BE_TWEETED_PATTERN = "/home/ealvarezmellado/lazaro/tobetweeted/tobetweeted_"
 
+FORBIDDEN_URL_PATTERNS = [
+	"https://cat.elpais.com",
+	"que-ver-hoy-en-tv",
+	"/encatala/",
+	"/horoscopo-",
+	"vodafone.es",
+	"/escaparate/",
+	"/mingote/",
+	"/el-roto.html",
+	"/ultima-hora-",
+	"/audiencias-canales/"
+	"/el-observatorio/",
+	"/imagenes/",
+	"/blog/al-dia/",
+	"/videos/"
+]
+
+FORBIDDEN_TITLE_PATTERNS = [
+	"Podcast |",
+	"DIRECTO |",
+	"última hora"
+]
+
+PUBLIRREPORTAJE_PATTERNS = [
+	"Publirreportaje\n",
+	"En 20Minutos buscamos las mejores ofertas"
+]
+
+PAYWALL_PATTERNS = [
+	"Inicia sesi\u00f3n para seguir leyendo",
+	"\n\nPREMIUM\n\n",
+	"Para seguir leyendo, hazte Premium",
+	"Si quieres seguir toda la actualidad sin límites"
+]
+
+FORBIDDEN_AUTHOR_PATTERNS = [
+	"EFE",
+	"Europa Press"
+]
+
+MEDIA_WITH_XML_FORMAT = [
+	"lavanguardia"
+]

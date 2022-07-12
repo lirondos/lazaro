@@ -1,12 +1,9 @@
 # Dependencies
 #Python 3.7.4
-spacy==2.2.2
-python-crfsuite==0.9.6
 nltk==3.4.5
 regex
 #pymagnitude
 tabulate
-https://github.com/explosion/spacy-models/releases/download/es_core_news_md-2.2.5/es_core_news_md-2.2.5.tar.gz
 numpy>=1.15.0
 six
 gensim
@@ -15,14 +12,11 @@ newspaper3k
 tweepy
 furl
 pandas
-#pip install git+https://github.com/ConstantineLignos/quickvec.git #install separately
-emoji
-textblob
-googletrans
 mysql # install via conda install. required by pattern
 pattern
-plotly
 langdetect
+sentence_splitter
+pylazaro
 
 # Development
 #black
