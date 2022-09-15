@@ -1,17 +1,9 @@
 # ignore jsonl files automatically annotated
-*_revised.jsonl
-*errors.jsonl
 *.log
 secret.py
-automatically_annotated/**
-indices/**
-embeddings/**
-embeddings_db/**
-tobepredicted/**
+logs/**
 tobetweeted/**
 .idea/**
 logs/**
-data/anglicisms_index.csv
-data/articles_index.csv
-scripts/lemmatize_db.py
+utils/db_manager.py
 **/__pycache__/**

@@ -1,22 +1,23 @@
 # Dependencies
 #Python 3.7.4
-nltk==3.4.5
-regex
+#nltk==3.4.5
+#regex
 #pymagnitude
-tabulate
-numpy>=1.15.0
-six
-gensim
-frozendict
+#tabulate
+#numpy>=1.15.0
+#six
+#gensim
+#frozendict
 newspaper3k
 tweepy
 furl
-pandas
+#pandas
 mysql # install via conda install. required by pattern
 pattern
 langdetect
 sentence_splitter
 pylazaro
+attr
 
 # Development
 #black
