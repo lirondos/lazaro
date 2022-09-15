@@ -1,0 +1,3 @@
+urls_file: param/rss.csv
+log_file: atope.log
+tweet: True

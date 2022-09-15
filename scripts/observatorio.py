@@ -1,36 +1,140 @@
+#coding:utf8
 import sys
 import os
 from pylazaro import Lazaro
+from typing import Dict, Set
+
+import csv
+import yaml
+from pathlib import Path
+import argparse
+import time
+from datetime import datetime, timezone
+import warnings
+import mysql.connector
+from mysql.connector.errors import OperationalError
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("."))
-sys.path.append("C:/Users/Elena/Desktop/lazaro/scripts/")
-sys.path.append("C:/Users/Elena/Desktop/lazaro/utils/")
 
-FILE = "C:/Users/Elena/Desktop/lazaro/scripts/observatorio.out"
 
+parser = argparse.ArgumentParser()
+parser.add_argument('root', type=str, help='Path to current directory')
+parser.add_argument('param', type=str, help='Path to file with params')
+args = parser.parse_args()
+
+sys.path.append(Path(args.root) / Path("scripts/"))
+sys.path.append(Path(args.root) / Path("utils/"))
+
+
+from utils.db_manager import DB_Manager
 from scripts.rss_reader import FeedReader
+from utils.csv_writer import CSV_Writer
+from utils.constants import TO_BE_TWEETED_FOLDER, LOGS_FOLDER
+
+import logging
+
+
+def main() -> None:
+
+    db_manager = DB_Manager()
+    lazaro = Lazaro()
+    
+    bor_index_cache: Dict = db_manager.get_index_bor_cache()
+    news_cache: Set = db_manager.get_news_cache()
+    
+    logger.info(bor_index_cache)
+    logger.info(news_cache)
+
+    with open(get_urls_file()) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        for row in csv_reader:
+            if len(row) == 0 or row[0].startswith("#"):
+                continue
+            (feed, newspaper, section) = row
+            logger.info('Recorriendo %s', newspaper)
+            myrss = FeedReader(feed, newspaper, section)
+            gen = myrss.news_generator(already_seen=news_cache)
+            for news_item in gen:
+                time.sleep(2)
+                logger.info('Incorporando noticia: %s', news_item.url)
+                try:
+                    db_manager.write_news_to_db(news_item)
+                    news_cache.add(news_item.url)
+                except OperationalError:
+                    db_manager.reset_conn()
+                    continue
+                except Exception as e:
+                    logger.error('Algo falló al escribir en la bbdd la noticia: %s', news_item.url)
+                    logger.error(e)
+                    continue
+                for i, sent in enumerate(news_item.sentences):
+                    result = lazaro.analyze(sent)
+                    if len(result.tokens) > 2: # we skip sentences that have only 2 words of less
+                        borrowings = result.borrowings
+                        for bor in borrowings:
+                            if bor.text not in bor_index_cache:
+                                try:
+                                    db_manager.add_borrowing_to_index(bor)
+                                    bor_index_cache[bor.text] = 1
+                                except Exception as e:
+                                    logger.error('Algo falló al escribir en el index el anglicismo %s de la noticia: %s', bor, news_item.url)
+                                    logger.error(e)
+                                    continue
+                            elif bor_index_cache[bor.text] == 1: # bor index exist but was an hapax until now
+                                db_manager.update_hapax(bor)
+                                bor_index_cache[bor.text] = 0
+                                if config["tweet"]:
+                                    csv_writer.write_bor(bor, news_item)
+                            try:
+                                db_manager.write_borrowing_to_db(bor, news_item, i)
+                            except Exception as e:
+                                logger.error('Algo falló al escribir en la bbdd el anglicismo %s de la noticia: %s', bor, news_item.url)
+                                logger.error(e)
+                                continue
+
+                db_manager.mydb.commit()
+
+    db_manager.close()
+    logger.info("Acabose")
+
+
+def get_urls_file() -> Path:
+    return Path(args.root) / Path(config["urls_file"])
+
+def parse_config():
+    param_path = args.param
+    with open(param_path, 'r') as stream:
+        config = yaml.safe_load(stream)
+        return config
+
+def set_csv_writer():
+    logger.info("Preparando csv para tuitear")
+    today = datetime.now(timezone.utc).strftime('%d%m%Y') + ".csv"
+    tweet_file = Path(args.root) / Path(TO_BE_TWEETED_FOLDER) / Path(today)
+    return CSV_Writer.from_path(tweet_file)
+
+def set_logger():
+    # Create a custom logger
+    logger = logging.getLogger(__name__)
+    f_handler = logging.FileHandler(Path(args.root)/Path(LOGS_FOLDER)/config["log_file"], "w",
+                                    encoding = "UTF-8")
+    f_handler.setLevel(logging.DEBUG)
+    f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    f_handler.setFormatter(f_format)
+    logger.addHandler(f_handler)
+    return logger
+
+
 
 if __name__ == "__main__":
-    feeds = [
-        ("https://www.lavanguardia.com/newsml/home.xml", "lavanguardia"),
-        ("https://www.eldiario.es/rss/", "eldiario"),
-        ("https://rss.elconfidencial.com/espana/", "elconfidencial"),
-        ("https://www.20minutos.es/rss/", "20minutos"),
-        ("https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml", "elmundo"),
-        ("https://www.abc.es/rss/feeds/abc_ultima.xml", "abc"),
-        ("https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", "elpais"),
-    ]
-    lazaro = Lazaro()
-    with open(FILE, "w", encoding="utf-8") as f:
-        for feed, newspaper in feeds:
-            myrss = FeedReader(feed, newspaper)
-            gen = myrss.news_generator()
-            for i in gen:
-                for sent in i.sentences:
-                    result = lazaro.analyze(sent)
-                    borrowings = result.borrowings()
-                    tokens = [token for token, tag in result.tag_per_token()]
-                    for bor in borrowings:
-                        f.write(bor[0])
-                        f.write(sent+"\n")
+    config = parse_config()
+    logger = set_logger()
+    csv_writer = set_csv_writer() if config["tweet"] else None
+    main()
+
+
+

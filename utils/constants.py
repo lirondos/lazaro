@@ -1,16 +1,6 @@
-ANGLICISM_INDEX = "/home/ealvarezmellado/lazaro/data/anglicisms_index.csv"
-ARTICLES_INDEX = "/home/ealvarezmellado/lazaro/data/articles_index.csv"
-VECTORS_FOLDER = "/home/ealvarezmellado/lazaro/embeddings_db/"
-DATA_FOLDER = "/home/ealvarezmellado/lazaro/data/"
 
-AUTOMATICALLY_ANNOTATED_FOLDER = "/home/ealvarezmellado/lazaro/automatically_annotated/"
-TO_BE_PREDICTED_FOLDER = "/home/ealvarezmellado/lazaro/tobepredicted/"
-INDICES_FOLDER = "/home/ealvarezmellado/lazaro/indices/"
-PATH_TO_UTILS = "/home/ealvarezmellado/lazaro/utils/"
-CORPUS = "/home/ealvarezmellado/lazaro/corpus"
-PATH_TO_VIZ = "/home/ealvarezmellado/lazaro/web/viz/"
-
-TO_BE_TWEETED_PATTERN = "/home/ealvarezmellado/lazaro/tobetweeted/tobetweeted_"
+TO_BE_TWEETED_FOLDER = "tobetweeted/"
+LOGS_FOLDER = "logs/"
 
 FORBIDDEN_URL_PATTERNS = [
 	"https://cat.elpais.com",
@@ -26,7 +16,18 @@ FORBIDDEN_URL_PATTERNS = [
 	"/el-observatorio/",
 	"/imagenes/",
 	"/blog/al-dia/",
-	"/videos/"
+	"/videos/",
+	"/comprar/",
+	"https://www.eldiario.es/redaccion/",
+	"peridis.html",
+	"efecomunica",
+	"/fotogaleria/",
+	"/album/",
+	"/el-blog-de-el-salto/",
+	"sincroguia-tv.expansion.com",
+	"https://www.eldiario.es/edcreativo/",
+	"directo",
+	"video"
 ]
 
 FORBIDDEN_TITLE_PATTERNS = [
@@ -44,12 +45,21 @@ PAYWALL_PATTERNS = [
 	"Inicia sesi\u00f3n para seguir leyendo",
 	"\n\nPREMIUM\n\n",
 	"Para seguir leyendo, hazte Premium",
-	"Si quieres seguir toda la actualidad sin límites"
+	"Si quieres seguir toda la actualidad sin límites",
+	"Contenido solo para socios",
+	"Activa tu cuenta" # As
+]
+
+AGENCIAS = [
+	"agenciasinc",
+	"efe"
 ]
 
 FORBIDDEN_AUTHOR_PATTERNS = [
 	"EFE",
-	"Europa Press"
+	"Europa Press",
+	"Agencia",
+	"Sinc"
 ]
 
 MEDIA_WITH_XML_FORMAT = [
