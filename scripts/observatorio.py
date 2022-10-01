@@ -59,10 +59,13 @@ def main() -> None:
             myrss = FeedReader(feed, newspaper, section)
             gen = myrss.news_generator(already_seen=news_cache)
             for news_item in gen:
-                time.sleep(2)
-                logger.info('Incorporando noticia: %s', news_item.url)
+                if news_item.url in news_cache:
+                    logger.info('Esta noticia ya la tengo: %s', news_item.url)
+                    continue
+                time.sleep(1)
                 try:
                     db_manager.write_news_to_db(news_item)
+                    logger.info('Incorporando noticia: %s', news_item.url)
                     news_cache.add(news_item.url)
                 except OperationalError:
                     db_manager.reset_conn()

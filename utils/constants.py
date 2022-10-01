@@ -1,4 +1,4 @@
-
+DAYS_SINCE = 3
 TO_BE_TWEETED_FOLDER = "tobetweeted/"
 LOGS_FOLDER = "logs/"
 
@@ -27,7 +27,11 @@ FORBIDDEN_URL_PATTERNS = [
 	"sincroguia-tv.expansion.com",
 	"https://www.eldiario.es/edcreativo/",
 	"directo",
-	"video"
+	"video",
+    "/efe-comunica/",
+	"https://elpais.com/economia/formacion/",
+	"https://www.elle.com/es/pasarelas/",
+	"https://vertele.eldiario.es/audiencias-tv/"
 ]
 
 FORBIDDEN_TITLE_PATTERNS = [

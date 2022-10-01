@@ -2,12 +2,12 @@ https://www.eleconomista.es/rss/rss-seleccion-ee.php,eleconomista,economia
 https://www.eleconomista.es/rss/rss-mercados.php,eleconomista,economia
 https://www.eleconomista.es/rss/rss-economia.php,eleconomista,economia
 https://www.eleconomista.es/rss/rss-category.php?category=tecnologia,eleconomista,economia
-https://e00-expansion.uecdn.es/rss/mercados.xml,expansion,economia
-https://e00-expansion.uecdn.es/rss/empresas.xml,expansion,economia
-https://e00-expansion.uecdn.es/rss/economiapolitica.xml,expansion,economia
-https://e00-expansion.uecdn.es/rss/opinion.xml,expansion,economia
-https://e00-expansion.uecdn.es/rss/juridico.xml,expansion,economia
-https://e00-expansion.uecdn.es/rss/portada.xml,expansion,economia
+#https://e00-expansion.uecdn.es/rss/mercados.xml,expansion,economia
+#https://e00-expansion.uecdn.es/rss/empresas.xml,expansion,economia
+#https://e00-expansion.uecdn.es/rss/economiapolitica.xml,expansion,economia
+#https://e00-expansion.uecdn.es/rss/opinion.xml,expansion,economia
+#https://e00-expansion.uecdn.es/rss/juridico.xml,expansion,economia
+#https://e00-expansion.uecdn.es/rss/portada.xml,expansion,economia
 https://www.jotdown.es/category/arte-y-letras/feed/,jotdown,cultura
 https://www.jotdown.es/category/ciencias/feed/,jotdown,cultura
 https://www.jotdown.es/category/cine/feed/,jotdown,cultura
@@ -71,7 +71,7 @@ https://cincodias.elpais.com/rss/cincodias/noticias_mas_vistas.xml,cincodias,eco
 #https://www.publico.es/rss/economia,publico,economia
 #https://www.publico.es/rss/tremending,publico,internet
 https://www.elle.com/es/rss/all.xml/,elle,femenina
-#https://www.muyinteresante.es/rss,muyinteresante,ciencia
+https://www.muyinteresante.es/rss,muyinteresante,ciencia
 https://es.rollingstone.com/feed/,rollingstone,musica
 https://www.fotogramas.es/rss/all.xml/,fotogramas,cine
 #https://as.com/rss/tags/ultimas_noticias.xml,as,deporte
@@ -268,12 +268,12 @@ https://www.elsaltodiario.com/general/feed,elsalto,politica
 https://www.lamarea.com/feed/,lamarea,politica
 https://www.climatica.lamarea.com/feed/,climatica,medio ambiente
 #http://feeds.weblogssl.com/elblogsalmon2,elblogsalmon,economia
-https://www.pikaramagazine.com/feed/,pikara,feminismo
-https://www.pikaramagazine.com/category/en_red/feed/,pikara,feminismo
-https://www.pikaramagazine.com/category/cuerpos/feed,pikara,feminismo
-https://www.pikaramagazine.com/category/ficciones/feed/,pikara,feminismo
-https://www.pikaramagazine.com/category/planeta/feed,pikara,feminismo
-https://www.pikaramagazine.com/category/voces/feed,pikara,feminismo
+#https://www.pikaramagazine.com/feed/,pikara,feminismo
+#https://www.pikaramagazine.com/category/en_red/feed/,pikara,feminismo
+#https://www.pikaramagazine.com/category/cuerpos/feed,pikara,feminismo
+#https://www.pikaramagazine.com/category/ficciones/feed/,pikara,feminismo
+#https://www.pikaramagazine.com/category/planeta/feed,pikara,feminismo
+#https://www.pikaramagazine.com/category/voces/feed,pikara,feminismo
 #http://feeds.weblogssl.com/diariodelviajero,diariodelviajero,viajes
 #http://feeds.weblogssl.com/bebesymas,bebesymas,bebes
 #http://feeds.weblogssl.com/motorpasion,motorpasion,motor

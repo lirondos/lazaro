@@ -91,13 +91,12 @@ class RssReader(Reader):
         entries = []
         for entry in feed["entries"]:
             try:
-                if hasattr(entry, "published_parsed") and time.time() - time.mktime(
-                        entry.published_parsed) < (86400*3):
-                    entries.append(entry)
-            except (KeyError, AttributeError) as e:
-                if hasattr(entry, "updated_parsed") and time.time() - time.mktime(
-                        entry.updated_parsed) < (86400*3):
-                    entries.append(entry)
+                if hasattr(entry, "published_parsed"):
+                    if time.time() - time.mktime(entry.published_parsed) < (86400*DAYS_SINCE):
+                        entries.append(entry)
+                if hasattr(entry, "updated_parsed"):
+                    if time.time() - time.mktime(entry.updated_parsed) < (86400*DAYS_SINCE):
+                        entries.append(entry)
             except:
                 continue
         return entries
@@ -119,7 +118,7 @@ class XMLReader(Reader):
 
     def get_entries(self):
         data = XMLReader.get_feed(self.rss_url)
-        filtered_entries = [entry for entry in data["NewsML"]["NewsItem"] if time.time() - time.mktime(time.strptime(entry["NewsManagement"]["FirstCreated"].split("+")[0], "%Y-%m-%dT%H:%M:%S")) < (86400*3)]
+        filtered_entries = [entry for entry in data["NewsML"]["NewsItem"] if time.time() - time.mktime(time.strptime(entry["NewsManagement"]["FirstCreated"].split("+")[0], "%Y-%m-%dT%H:%M:%S")) < (86400*DAYS_SINCE)]
         return filtered_entries
 
     def news_from_entry(self, entry: Dict):
