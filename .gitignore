@@ -5,5 +5,6 @@ logs/**
 tobetweeted/**
 .idea/**
 logs/**
+scripts/lemmatize_db.py
 utils/db_manager.py
 **/__pycache__/**
