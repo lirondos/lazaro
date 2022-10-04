@@ -1,27 +1,20 @@
 # Dependencies
 #Python 3.7.4
-#nltk==3.4.5
-#regex
-#pymagnitude
-#tabulate
-#numpy>=1.15.0
-#six
-#gensim
-#frozendict
+# conda install -c conda-forge mysqlclient
+#mysql # install via conda install. required by pattern conda install -c anaconda mysql-connector-python
 newspaper3k
 tweepy
 furl
-#pandas
-mysql # install via conda install. required by pattern
 pattern
 langdetect
 sentence_splitter
 pylazaro
 attr
+sentence-splitter
+feedparser
+xmltodict
+requests
+pyyaml 
 
-# Development
-#black
-pylint
-flake8
-mypy
-pytest
+#python -c "import nltk; nltk.download('omw-1.4')"
+
