@@ -1,5 +1,5 @@
 # Observatorio Lázaro
-This is the code repository of Observatorio Lázaro, an observatory of anglicism usage in the Spanish press. The purpose of this project is to apply a data-driven approach to the study of anglicisms (ie, unadapted lexical borrowings from English) in Spanish newspapers. Every day, Observatorio Lázaro collects the latests news published in 22 Spanish news sources, analyzes them and extracts the anglicisms that have been used in the daily news.
+This is the code repository of [Observatorio Lázaro website](https://observatoriolazaro.es/), an observatory of anglicism usage in the Spanish press. The purpose of this project is to apply a data-driven approach to the study of anglicisms (ie, unadapted lexical borrowings from English) in Spanish newspapers. Every day, Observatorio Lázaro collects the latests news published in 22 Spanish news sources, analyzes them and extracts the anglicisms that have been used in the daily news.
 
 The core of the project is a Machine Learning model that extracts unadapted lexical borrowings (especially English lexical borrowings or *anglicisms*) from Spanish articles. The model is a BiLSTM-CRF model fed with word and subword embeddings. More information on the model can be found in the paper [*Detecting Unassimilated Borrowings in Spanish: An Annotated Corpus and Approaches to Modeling*](https://aclanthology.org/2022.acl-long.268/). More info on the motivation behind the project can be found at the [*About* section in Observatorio Lázaro website](https://observatoriolazaro.es/en/acerca.html).
 
@@ -13,9 +13,9 @@ The output of Observatorio Lázaro, along with graphs, visualizations and aggreg
 * The dataset used to train the model behind the Observatory is the [COALAS corpus](https://github.com/lirondos/coalas>).
 
 ## Previous versions
-A previous version of the Observatorio ran on a CRF model and tracked 8 Spanish newspapers. 
+A previous version of the Observatorio ran on a CRF model fed with handcrafted features and tracked 8 Spanish newspapers. 
 * For the code of that old version see [``crf-aug2022`` branch](https://github.com/lirondos/lazaro/tree/crf-aug2022).
-* For the technical creation behind the Observatorio see my MS thesis [*Lázaro: An Extractor of Emergent Anglicisms in Spanish Newswire*](https://scholarworks.brandeis.edu/esploro/outputs/9923880179101921).
+* For the technical creation behind that first version of the Observatorio see my MS thesis [*Lázaro: An Extractor of Emergent Anglicisms in Spanish Newswire*](https://scholarworks.brandeis.edu/esploro/outputs/9923880179101921).
 
 
 ## Citation
