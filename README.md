@@ -10,7 +10,7 @@ The output of Observatorio Lázaro, along with graphs, visualizations and aggreg
 
 ## Python library and models
 * The anglicism detection model that runs behind Observatorio Lázaro is available through the [Python library ``pylazaro``](https://pylazaro.readthedocs.io/) or through [HuggingFace model hub](https://huggingface.co/models?other=arxiv:2203.16169).
-* The dataset used to train the model behind the Observatory is the [COALAS corpus](https://github.com/lirondos/coalas>).
+* The dataset used to train the model behind the Observatory is the [COALAS corpus](https://github.com/lirondos/coalas).
 
 ## Previous versions
 A previous version of the Observatorio ran on a CRF model fed with handcrafted features and tracked 8 Spanish newspapers. 
