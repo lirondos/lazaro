@@ -75,7 +75,11 @@ def main() -> None:
                     logger.error(e)
                     continue
                 for i, sent in enumerate(news_item.sentences):
-                    result = lazaro.analyze(sent)
+                    try:
+                        result = lazaro.analyze(sent)
+                    except Exception as e: 
+                        logger.error("Error al procesar la frase: %s", sent)
+                        continue
                     if len(result.tokens) > 2: # we skip sentences that have only 2 words of less
                         borrowings = result.borrowings
                         for bor in borrowings:
