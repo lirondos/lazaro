@@ -1,4 +1,4 @@
-DAYS_SINCE = 3
+DAYS_SINCE = 5
 TO_BE_TWEETED_FOLDER = "tobetweeted/"
 LOGS_FOLDER = "logs/"
 

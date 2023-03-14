@@ -112,14 +112,19 @@ class XMLReader(Reader):
     section = attr.ib(type=str)
 
     def get_feed(url):
-        response = requests.get(url)
-        data = xmltodict.parse(response.content)
-        return data
+        try:
+            response = requests.get(url)
+            data = xmltodict.parse(response.content)
+            return data
+        except: 
+            return None
 
     def get_entries(self):
         data = XMLReader.get_feed(self.rss_url)
-        filtered_entries = [entry for entry in data["NewsML"]["NewsItem"] if time.time() - time.mktime(time.strptime(entry["NewsManagement"]["FirstCreated"].split("+")[0], "%Y-%m-%dT%H:%M:%S")) < (86400*DAYS_SINCE)]
-        return filtered_entries
+        if data:
+            filtered_entries = [entry for entry in data["NewsML"]["NewsItem"] if time.time() - time.mktime(time.strptime(entry["NewsManagement"]["FirstCreated"].split("+")[0], "%Y-%m-%dT%H:%M:%S")) < (86400*DAYS_SINCE)]
+            return filtered_entries
+        return []
 
     def news_from_entry(self, entry: Dict):
         return News.news_from_XML_entry(self.newspaper, self.section, entry)

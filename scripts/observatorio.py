@@ -86,6 +86,7 @@ def main() -> None:
                             if bor.text not in bor_index_cache:
                                 try:
                                     db_manager.add_borrowing_to_index(bor)
+                                    time.sleep(1)
                                     bor_index_cache[bor.text] = 1
                                 except Exception as e:
                                     logger.error('Algo falló al escribir en el index el anglicismo %s de la noticia: %s', bor, news_item.url)
@@ -93,11 +94,13 @@ def main() -> None:
                                     continue
                             elif bor_index_cache[bor.text] == 1: # bor index exist but was an hapax until now
                                 db_manager.update_hapax(bor)
+                                time.sleep(1)
                                 bor_index_cache[bor.text] = 0
                                 if config["tweet"]:
                                     csv_writer.write_bor(bor, news_item)
                             try:
                                 db_manager.write_borrowing_to_db(bor, news_item, i)
+                                time.sleep(1)
                             except Exception as e:
                                 logger.error('Algo falló al escribir en la bbdd el anglicismo %s de la noticia: %s', bor, news_item.url)
                                 logger.error(e)
