@@ -46,8 +46,8 @@ def main() -> None:
     bor_index_cache: Dict = db_manager.get_index_bor_cache()
     news_cache: Set = db_manager.get_news_cache()
     
-    logger.info(bor_index_cache)
-    logger.info(news_cache)
+    #logger.info(bor_index_cache)
+    #logger.info(news_cache)
 
     with open(get_urls_file()) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
