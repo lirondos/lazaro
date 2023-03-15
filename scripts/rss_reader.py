@@ -73,8 +73,8 @@ class RssReader(Reader):
     section = attr.ib(type=str)
 
     def get_feed(self):
-        if self.newspaper == "abc": # ñapa para el rss roto de abc
-            headers = []
+        if self.newspaper == "abc" or "eleconomista": # ñapa para el rss roto de abc y de eleconomista
+            headers = {'User-agent': 'Mozilla/5.0'}
             web_page = requests.get(self.rss_url, headers=headers, allow_redirects=True)
             content = web_page.content.strip()  # drop the first newline (if any)
             feed = feedparser.parse(content)

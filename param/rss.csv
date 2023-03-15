@@ -34,26 +34,49 @@ https://www.agenciasinc.es/feed/Innovacion,agenciasinc,ciencia
 https://www.agenciasinc.es/feed/Noticias,agenciasinc,ciencia
 https://www.agenciasinc.es/feed/Entrevistas,agenciasinc,ciencia
 https://www.agenciasinc.es/feed/Opinion,agenciasinc,ciencia
-# Medios alternativos CC
-https://www.lavanguardia.com/newsml/internacional.xml,lavanguardia,internacional
-https://www.lavanguardia.com/newsml/politica.xml,lavanguardia,politica
-https://www.lavanguardia.com/newsml/vida.xml,lavanguardia,salud
-https://www.lavanguardia.com/newsml/deportes.xml,lavanguardia,deporte
-https://www.lavanguardia.com/newsml/economia.xml,lavanguardia,economia
-https://www.lavanguardia.com/newsml/opinion.xml,lavanguardia,opinion
-https://www.lavanguardia.com/newsml/cultura.xml,lavanguardia,cultura
-https://www.lavanguardia.com/newsml/gente.xml,lavanguardia,gente
-https://www.lavanguardia.com/newsml/sucesos.xml,lavanguardia,sucesos
-https://www.lavanguardia.com/newsml/ciencia.xml,lavanguardia,ciencia
-https://www.lavanguardia.com/newsml/tecnologia.xml,lavanguardia,tecnologia
-https://www.lavanguardia.com/newsml/television.xml,lavanguardia,television
-https://www.lavanguardia.com/newsml/series.xml,lavanguardia,television
-https://www.lavanguardia.com/newsml/ocio.xml,lavanguardia,ocio
-https://www.lavanguardia.com/newsml/motor.xml,lavanguardia,motor
-https://www.lavanguardia.com/newsml/de-moda.xml,lavanguardia,moda
-https://www.lavanguardia.com/newsml/vivo.xml,lavanguardia,estilo de vida
-https://www.lavanguardia.com/newsml/comer.xml,lavanguardia,estilo de vida
-https://www.lavanguardia.com/newsml/home.xml,lavanguardia,portada
+https://www.lavanguardia.com/rss/lacontra.xml,lavanguardia,opinion
+https://www.lavanguardia.com/rss/natural.xml,lavanguardia,medio ambiente
+https://www.lavanguardia.com/rss/ciencia.xml,lavanguardia,ciencia
+https://www.lavanguardia.com/rss/vida/salud.xml,lavanguardia,salud
+https://www.lavanguardia.com/rss/tecnologia.xml,lavanguardia,tecnologia
+https://www.lavanguardia.com/rss/television.xml,lavanguardia,television
+https://www.lavanguardia.com/rss/series.xml,lavanguardia,television
+https://www.lavanguardia.com/rss/ocio/viajes.xml,lavanguardia,estilo de vida
+https://www.lavanguardia.com/rss/motor.xml,lavanguardia,motor
+https://www.lavanguardia.com/rss/magazine.xml,lavanguardia,estilo de vida
+https://www.lavanguardia.com/rss/vivo.xml,lavanguardia,estilo de vida
+https://www.lavanguardia.com/rss/mascotas.xml,lavanguardia,estilo de vida
+https://www.lavanguardia.com/rss/mamas-y-papas.xml,lavanguardia,estilo de vida
+https://www.lavanguardia.com/rss/comer.xml,lavanguardia,estilo de vida
+https://www.lavanguardia.com/rss/internacional.xml,lavanguardia,internacional
+https://www.lavanguardia.com/rss/politica.xml,lavanguardia,politica
+https://www.lavanguardia.com/rss/vida.xml,lavanguardia,salud
+https://www.lavanguardia.com/rss/deportes.xml,lavanguardia,deportes
+https://www.lavanguardia.com/rss/economia.xml,lavanguardia,economia
+https://www.lavanguardia.com/rss/opinion.xml,lavanguardia,opinion
+https://www.lavanguardia.com/rss/cultura.xml,lavanguardia,cultura
+https://www.lavanguardia.com/rss/gente.xml,lavanguardia,gente
+https://www.lavanguardia.com/rss/sucesos.xml,lavanguardia,sucesos
+https://www.lavanguardia.com/rss/home.xml
+#https://www.lavanguardia.com/newsml/internacional.xml,lavanguardia,internacional
+#https://www.lavanguardia.com/newsml/politica.xml,lavanguardia,politica
+#https://www.lavanguardia.com/newsml/vida.xml,lavanguardia,salud
+#https://www.lavanguardia.com/newsml/deportes.xml,lavanguardia,deporte
+#https://www.lavanguardia.com/newsml/economia.xml,lavanguardia,economia
+#https://www.lavanguardia.com/newsml/opinion.xml,lavanguardia,opinion
+#https://www.lavanguardia.com/newsml/cultura.xml,lavanguardia,cultura
+#https://www.lavanguardia.com/newsml/gente.xml,lavanguardia,gente
+#https://www.lavanguardia.com/newsml/sucesos.xml,lavanguardia,sucesos
+#https://www.lavanguardia.com/newsml/ciencia.xml,lavanguardia,ciencia
+#https://www.lavanguardia.com/newsml/tecnologia.xml,lavanguardia,tecnologia
+#https://www.lavanguardia.com/newsml/television.xml,lavanguardia,television
+#https://www.lavanguardia.com/newsml/series.xml,lavanguardia,television
+#https://www.lavanguardia.com/newsml/ocio.xml,lavanguardia,ocio
+#https://www.lavanguardia.com/newsml/motor.xml,lavanguardia,motor
+#https://www.lavanguardia.com/newsml/de-moda.xml,lavanguardia,moda
+#https://www.lavanguardia.com/newsml/vivo.xml,lavanguardia,estilo de vida
+#https://www.lavanguardia.com/newsml/comer.xml,lavanguardia,estilo de vida
+#https://www.lavanguardia.com/newsml/home.xml,lavanguardia,portada
 https://www.menshealth.com/es/rss/all.xml,menshealth,masculina
 https://cincodias.elpais.com/rss/cincodias/ultimas_noticias.xml,cincodias,economia
 https://cincodias.elpais.com/rss/cincodias/noticias_mas_vistas.xml,cincodias,economia

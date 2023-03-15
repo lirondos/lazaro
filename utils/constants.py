@@ -67,5 +67,5 @@ FORBIDDEN_AUTHOR_PATTERNS = [
 ]
 
 MEDIA_WITH_XML_FORMAT = [
-	"lavanguardia"
+	#"lavanguardia"
 ]
