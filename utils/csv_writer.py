@@ -2,6 +2,7 @@ from scripts.news import News
 import attr
 from pylazaro.borrowing import Borrowing
 import csv
+import os
 
 @attr.s
 class CSV_Writer(object):
