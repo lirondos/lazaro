@@ -10,11 +10,12 @@ class CSV_Writer(object):
 
     @classmethod
     def from_path(cls, path_to_tweet_file):
-        with open(path_to_tweet_file, 'w', encoding="utf-8", newline='') as \
+        file_exists = os.path.isfile(path_to_tweet_file)
+        with open(path_to_tweet_file, 'a', encoding="utf-8", newline='') as \
                 tobetweeted:
             writer = csv.writer(tobetweeted, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(
-	            ["borrowing", "lang", "context", "newspaper", "url", "date", "categoria"])
+            if not file_exists:
+                writer.writerow(["borrowing", "lang", "context", "newspaper", "url", "date", "categoria"])
             return cls(path_to_tweet_file)
 
     def write_bor(self, bor: Borrowing, news: News):
