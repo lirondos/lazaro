@@ -47,7 +47,7 @@ class FeedReader(object):
 
     def news_generator(self, already_seen={}):
         for entry in self._reader.get_entries():
-            if self.newspaper == "lavanguardia":
+            if self.newspaper in MEDIA_WITH_XML_FORMAT:
                 url = furl.furl(entry["NewsLines"]["DeriveredFrom"]).remove(args=True,
                                                                     fragment=True).url
             else:
