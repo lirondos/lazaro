@@ -1,4 +1,5 @@
 DAYS_SINCE = 5
+LAST_WEEK = 7
 TO_BE_TWEETED_FOLDER = "tobetweeted/"
 LOGS_FOLDER = "logs/"
 
