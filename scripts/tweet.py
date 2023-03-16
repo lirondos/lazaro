@@ -62,6 +62,9 @@ def get_tweets(tweet_file: Path) -> List:
 if __name__ == "__main__":
     tweet_file = get_path_to_file()
     tweets = get_tweets(tweet_file)
+    for tweet in tweets: 
+        print(tweet)
+    """
     api = connect_to_twitter()
     for tweet in tweets:
         try:
@@ -70,3 +73,4 @@ if __name__ == "__main__":
         except tweepy.TweepError as e:
             if e == "[{'code': 187, 'message': 'Status is a duplicate.'}]":
                 pass
+    """
