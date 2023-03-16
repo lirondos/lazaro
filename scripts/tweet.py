@@ -57,7 +57,9 @@ def get_tweets(tweet_file: Path) -> List:
             (borrowing,lang,context,newspaper,url,date,categoria) = row
 
             mytweet = borrowing + "\n\n" + "\"..." + context + "...\"" + "\n" + url
+            print(mytweet)
             tweets.append(mytweet)
+    print(tweets)
     return random.shuffle(tweets)
 
 
