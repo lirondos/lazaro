@@ -24,7 +24,7 @@ sys.path.append(Path(args.root) / Path("utils/"))
 
 from scripts.secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
 from utils.constants import TO_BE_TWEETED_FOLDER
-from utils.utils import set_logger
+from utils.utils import set_logger, parse_config
 
 
 
