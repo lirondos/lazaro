@@ -51,6 +51,7 @@ def get_tweets(tweet_file: Path) -> List:
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader) # skip header
         for row in csv_reader:
+            print(row)
             if len(row) == 0:
                 continue
             (borrowing,lang,context,newspaper,url,date,categoria) = row
