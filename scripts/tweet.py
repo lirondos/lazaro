@@ -63,9 +63,12 @@ def get_tweets(tweet_file: Path) -> List:
 
 if __name__ == "__main__":
     tweet_file = get_path_to_file()
+    print(tweet_file)
     tweets = get_tweets(tweet_file)
     for tweet in tweets: 
         print(tweet)
+    api = connect_to_twitter()
+
     """
     api = connect_to_twitter()
     for tweet in tweets:
