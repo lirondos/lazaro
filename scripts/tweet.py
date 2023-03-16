@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.abspath("."))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('root', type=str, help='Path to current directory')
+parser.add_argument('param', type=str, help='Path to file with params')
 args = parser.parse_args()
 
 sys.path.append(Path(args.root) / Path("scripts/"))
@@ -67,6 +68,7 @@ def get_tweets(tweet_file: Path) -> List:
 
 
 if __name__ == "__main__":
+    config = parse_config(args.param)
     logger = set_logger(args.root, "log_tweet")
     tweet_file = get_path_to_file()
     tweets = get_tweets(tweet_file)

@@ -6,7 +6,7 @@ from pattern.en import singularize
 from utils.constants import *
 import logging
 from pathlib import Path
-
+import yaml
 
 
 
@@ -30,6 +30,12 @@ def set_logger(root: str, log_type: str):
     f_handler.setFormatter(f_format)
     logger.addHandler(f_handler)
     return logger
+    
+
+def parse_config(param_path):
+    with open(param_path, 'r') as stream:
+        config = yaml.safe_load(stream)
+        return config
 
 def contains_forbidden_pattern(mystring: str, forbidden_patterns: list):
     for forbidden_pattern in forbidden_patterns:
