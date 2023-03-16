@@ -34,6 +34,7 @@ from utils.db_manager import DB_Manager
 from scripts.rss_reader import FeedReader
 from utils.csv_writer import CSV_Writer
 from utils.constants import TO_BE_TWEETED_FOLDER, LOGS_FOLDER
+from utils.utils import *
 
 import logging
 
@@ -131,7 +132,7 @@ def set_csv_writer():
 
 if __name__ == "__main__":
     config = parse_config()
-    logger = set_logger("log_file")
+    logger = set_logger("log_observatorio")
     csv_writer = set_csv_writer() if config["tweet"] else None
     main()
 
