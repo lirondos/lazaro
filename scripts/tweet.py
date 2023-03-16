@@ -67,7 +67,7 @@ def get_tweets(tweet_file: Path) -> List:
 
 
 if __name__ == "__main__":
-    logger = set_logger("log_tweet")
+    logger = set_logger(args.root, "log_tweet")
     tweet_file = get_path_to_file()
     tweets = get_tweets(tweet_file)
 

@@ -5,6 +5,8 @@ import re
 from pattern.en import singularize
 from utils.constants import *
 import logging
+from pathlib import Path
+
 
 
 
@@ -18,10 +20,10 @@ HTML_SPECIAL_CHARS = {
     "\n": " ",
 }
 
-def set_logger(log_type: str):
+def set_logger(root: str, log_type: str):
     # Create a custom logger
     logger = logging.getLogger(__name__)
-    f_handler = logging.FileHandler(Path(args.root)/Path(LOGS_FOLDER)/config[log_type], "w",
+    f_handler = logging.FileHandler(Path(root)/Path(LOGS_FOLDER)/config[log_type], "w",
                                     encoding = "UTF-8")
     f_handler.setLevel(logging.DEBUG)
     f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
