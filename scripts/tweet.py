@@ -51,16 +51,14 @@ def get_tweets(tweet_file: Path) -> List:
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader) # skip header
         for row in csv_reader:
-            print(row)
             if len(row) == 0:
                 continue
             (borrowing,lang,context,newspaper,url,date,categoria) = row
 
             mytweet = borrowing + "\n\n" + "\"..." + context + "...\"" + "\n" + url
-            print(mytweet)
             tweets.append(mytweet)
-    print(tweets)
-    return random.shuffle(tweets)
+    random.shuffle(tweets)
+    return tweets
 
 
 
