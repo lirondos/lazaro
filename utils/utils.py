@@ -20,10 +20,10 @@ HTML_SPECIAL_CHARS = {
     "\n": " ",
 }
 
-def set_logger(root: str, log_type: str):
+def set_logger(root: str, log_file: str):
     # Create a custom logger
     logger = logging.getLogger(__name__)
-    f_handler = logging.FileHandler(Path(root)/Path(LOGS_FOLDER)/config[log_type], "w",
+    f_handler = logging.FileHandler(Path(root)/Path(LOGS_FOLDER)/log_file, "w",
                                     encoding = "UTF-8")
     f_handler.setLevel(logging.DEBUG)
     f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')

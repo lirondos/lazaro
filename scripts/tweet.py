@@ -69,7 +69,7 @@ def get_tweets(tweet_file: Path) -> List:
 
 if __name__ == "__main__":
     config = parse_config(args.param)
-    logger = set_logger(args.root, "log_tweet")
+    logger = set_logger(args.root, config["log_tweet"])
     tweet_file = get_path_to_file()
     tweets = get_tweets(tweet_file)
 

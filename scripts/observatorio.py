@@ -126,7 +126,7 @@ def set_csv_writer():
 
 if __name__ == "__main__":
     config = parse_config(args.param)
-    logger = set_logger(args.root, "log_observatorio")
+    logger = set_logger(args.root, config["log_observatorio"])
     csv_writer = set_csv_writer() if config["tweet"] else None
     main()
 
