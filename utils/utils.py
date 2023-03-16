@@ -4,6 +4,8 @@ from newspaper import Article
 import re
 from pattern.en import singularize
 from utils.constants import *
+import logging
+
 
 
 HTML_SPECIAL_CHARS = {
@@ -16,6 +18,16 @@ HTML_SPECIAL_CHARS = {
     "\n": " ",
 }
 
+def set_logger(log_type: str):
+    # Create a custom logger
+    logger = logging.getLogger(__name__)
+    f_handler = logging.FileHandler(Path(args.root)/Path(LOGS_FOLDER)/config[log_type], "w",
+                                    encoding = "UTF-8")
+    f_handler.setLevel(logging.DEBUG)
+    f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    f_handler.setFormatter(f_format)
+    logger.addHandler(f_handler)
+    return logger
 
 def contains_forbidden_pattern(mystring: str, forbidden_patterns: list):
     for forbidden_pattern in forbidden_patterns:
@@ -173,6 +185,7 @@ def is_invalid_url(url: str, newspaper: str) -> bool:
 
 def is_external_link(url, newspaper) -> bool:
     return newspaper not in url
+
 
 
 

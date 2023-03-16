@@ -1,3 +1,4 @@
 urls_file: param/rss.csv
-log_file: urls.log
+log_observatorio: urls.log
+log_tweet: tweets.log
 tweet: True

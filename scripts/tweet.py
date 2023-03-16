@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from typing import List
 import argparse
+import logging
 
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("."))
@@ -32,10 +33,11 @@ def connect_to_twitter():
 
     try:
         api.verify_credentials()
-        print("Authentication OK")
-    except:
-        print("Error during authentication")
-
+        logger.info("Authentication OK")
+    except Exception as e:
+        logger.error("Error during Twitter authentication")
+        logger.error(e)
+        
     return api
 
 
@@ -43,6 +45,7 @@ def connect_to_twitter():
 def get_path_to_file() -> Path:
     today = datetime.now(timezone.utc).strftime('%d%m%Y') + ".csv"
     tweet_file = Path(args.root) / Path(TO_BE_TWEETED_FOLDER) / Path(today)
+    logger.info('Tuiteando fichero: %s', tweet_file)
     return tweet_file
 
 def get_tweets(tweet_file: Path) -> List:
@@ -64,19 +67,14 @@ def get_tweets(tweet_file: Path) -> List:
 
 if __name__ == "__main__":
     tweet_file = get_path_to_file()
-    print(tweet_file)
     tweets = get_tweets(tweet_file)
-    for tweet in tweets: 
-        print(tweet)
-    api = connect_to_twitter()
 
-    """
     api = connect_to_twitter()
     for tweet in tweets:
         try:
             api.update_status(tweet)
             time.sleep((HOURS_TO_TWEET*60*60)/len(tweets)) # distribuir cada tuit en un lapso de n horas (mult por 60*60 a segundos)
         except tweepy.TweepError as e:
-            if e == "[{'code': 187, 'message': 'Status is a duplicate.'}]":
-                pass
-    """
+            logger.error("Error al tuitear: %s", tweet)
+            logger.error(e)
+            pass

@@ -127,22 +127,11 @@ def set_csv_writer():
     tweet_file = Path(args.root) / Path(TO_BE_TWEETED_FOLDER) / Path(today)
     return CSV_Writer.from_path(tweet_file)
 
-def set_logger():
-    # Create a custom logger
-    logger = logging.getLogger(__name__)
-    f_handler = logging.FileHandler(Path(args.root)/Path(LOGS_FOLDER)/config["log_file"], "w",
-                                    encoding = "UTF-8")
-    f_handler.setLevel(logging.DEBUG)
-    f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    f_handler.setFormatter(f_format)
-    logger.addHandler(f_handler)
-    return logger
-
 
 
 if __name__ == "__main__":
     config = parse_config()
-    logger = set_logger()
+    logger = set_logger("log_file")
     csv_writer = set_csv_writer() if config["tweet"] else None
     main()
 
