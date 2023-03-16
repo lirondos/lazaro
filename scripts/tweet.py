@@ -23,7 +23,7 @@ sys.path.append(Path(args.root) / Path("scripts/"))
 sys.path.append(Path(args.root) / Path("utils/"))
 
 from scripts.secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
-from utils.constants import TO_BE_TWEETED_FOLDER
+from utils.constants import TO_BE_TWEETED_FOLDER, HOURS_TO_TWEET
 from utils.utils import set_logger, parse_config
 
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         try:
             api.update_status(tweet)
             time.sleep((HOURS_TO_TWEET*60*60)/len(tweets)) # distribuir cada tuit en un lapso de n horas (mult por 60*60 a segundos)
-        except tweepy.TweepError as e:
+        except Exception as e:
             logger.error("Error al tuitear: %s", tweet)
             logger.error(e)
             pass
