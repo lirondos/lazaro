@@ -2,11 +2,9 @@ import tweepy
 import csv
 from datetime import datetime, timezone
 import time
-from scripts.secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
 import random
 import sys
 import os
-from utils.constants import TO_BE_TWEETED_FOLDER
 from pathlib import Path
 from typing import List
 import argparse
@@ -21,6 +19,10 @@ args = parser.parse_args()
 
 sys.path.append(Path(args.root) / Path("scripts/"))
 sys.path.append(Path(args.root) / Path("utils/"))
+
+from scripts.secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
+from utils.constants import TO_BE_TWEETED_FOLDER
+
 
 
 def connect_to_twitter():
