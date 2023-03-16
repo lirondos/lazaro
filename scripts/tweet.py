@@ -66,7 +66,7 @@ if __name__ == "__main__":
     for tweet in tweets:
         try:
             api.update_status(tweet)
-            time.sleep(82800/len(tweets)) # distribuir cada tuit en un lapso de 23 horas (82800 segundos)
+            time.sleep((HOURS_TO_TWEET*60*60)/len(tweets)) # distribuir cada tuit en un lapso de n horas (mult por 60*60 a segundos)
         except tweepy.TweepError as e:
             if e == "[{'code': 187, 'message': 'Status is a duplicate.'}]":
                 pass
