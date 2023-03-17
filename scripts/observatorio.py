@@ -28,7 +28,7 @@ args = parser.parse_args()
 
 sys.path.append(str(Path(args.root) / Path("scripts/")))
 sys.path.append(str(Path(args.root) / Path("utils/")))
-sys.path.append(str(Path(args.root)))
+#sys.path.append(str(Path(args.root)))
 print(sys.path)
 
 
