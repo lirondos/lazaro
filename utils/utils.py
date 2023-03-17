@@ -3,7 +3,7 @@ import sys
 from newspaper import Article
 import re
 from pattern.en import singularize
-from utils.constants import *
+from constants import *
 import logging
 from pathlib import Path
 import yaml
