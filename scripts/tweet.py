@@ -10,8 +10,6 @@ from typing import List
 import argparse
 import logging
 
-sys.path.insert(0, os.path.abspath(".."))
-sys.path.insert(0, os.path.abspath("."))
 
 
 parser = argparse.ArgumentParser()
@@ -19,8 +17,9 @@ parser.add_argument('root', type=str, help='Path to current directory')
 parser.add_argument('param', type=str, help='Path to file with params')
 args = parser.parse_args()
 
-sys.path.append(Path(args.root) / Path("scripts/"))
-sys.path.append(Path(args.root) / Path("utils/"))
+sys.path.append(str(Path(args.root)))
+print(sys.path)
+
 
 from scripts.secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
 from utils.constants import TO_BE_TWEETED_FOLDER, HOURS_TO_TWEET
