@@ -17,8 +17,8 @@ from mysql.connector.errors import OperationalError
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-sys.path.insert(0, os.path.abspath(".."))
-sys.path.insert(0, os.path.abspath("."))
+#sys.path.insert(0, os.path.abspath(".."))
+#sys.path.insert(0, os.path.abspath("."))
 
 
 parser = argparse.ArgumentParser()
@@ -28,6 +28,8 @@ args = parser.parse_args()
 
 sys.path.append(Path(args.root) / Path("scripts/"))
 sys.path.append(Path(args.root) / Path("utils/"))
+sys.path.append(Path(args.root))
+print(sys.path)
 
 
 from utils.db_manager import DB_Manager
