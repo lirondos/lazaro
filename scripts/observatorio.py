@@ -26,9 +26,9 @@ parser.add_argument('root', type=str, help='Path to current directory')
 parser.add_argument('param', type=str, help='Path to file with params')
 args = parser.parse_args()
 
-sys.path.append(str(Path(args.root) / Path("scripts/")))
-sys.path.append(str(Path(args.root) / Path("utils/")))
-#sys.path.append(str(Path(args.root)))
+#sys.path.append(str(Path(args.root) / Path("scripts/")))
+#sys.path.append(str(Path(args.root) / Path("utils/")))
+sys.path.append(str(Path(args.root)))
 print(sys.path)
 
 
