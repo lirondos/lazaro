@@ -135,6 +135,8 @@ def clean_html(article: Article):
     if "eldiario" in article.url:
         article.html = re.sub(r"<strong>M&aacute;s en tu mejor yo</strong>: <a.*?</a>", "",
                               article.html)
+        article.html = re.sub(r"<q class=\"know-more\">.+?</q>", "",
+                              article.html)  # articulo relacionado en eldiario
     if "elmundotoday" in article.url:
         article.html = re.sub(r"<div class=\"moove-gdpr-tab-main-content\">.+?</div>", "",
                            article.html) # cookies EMT
