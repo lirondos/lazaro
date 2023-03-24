@@ -1,8 +1,9 @@
 import attr
+from typing import List
 from langdetect import detect
-from newspaper import Article
-from newspaper import Config
+from newspaper import Article, Config
 from sentence_splitter import SentenceSplitter
+#import nltk
 import dateutil.parser as dateparser
 import furl
 import logging
@@ -21,6 +22,7 @@ class News(object):
     author = attr.ib(type=str)
     date = attr.ib(type=str)
     text = attr.ib(init=False)
+    full_article = attr.ib(init=False)
     language = attr.ib(init=False)
     sentences = attr.ib(init=False, type=list)
     token_length = attr.ib(init=False, type=int)
@@ -28,6 +30,7 @@ class News(object):
     def __attrs_post_init__(self):
         self.set_config_article()
         self.set_text()
+        self.set_full_article()
         self.set_language()
         self.set_sentences()
         self.set_token_length()
@@ -52,22 +55,32 @@ class News(object):
             self.text = ""
             logger.warning("Excepción creando la noticia: %s", self.url, exc_info=True)
 
+    def set_full_article(self):
+        self.full_article = self.title + "\n\n" + self.text
+
     def set_language(self):
         if self.is_invalid_text():
             self.language = None
         else:
-            self.language = detect(self.title + "\n" + self.text)
+            self.language = detect(self.full_article)
 
     def set_sentences(self):
+        new_line_sent: List = self.full_article.split('\n\n') # we first split \n\n breaks
         splitter = SentenceSplitter(language='es')
-        sentences = [sentence for sentence in splitter.split(self.title + "\n" +self.text)
-                          if  sentence and not sentence.isspace()] # we discard empty lines,
+        splitted_sent = [e for s in new_line_sent for e in splitter.split(s)]  # we second split based on punct
+        #splitted_sent = [splitter.split(s) for s in new_line_sent] # we second split based on punct
+        sentences = [sentence for sentence in splitted_sent
+                          if sentence and not sentence.isspace()] # we third remove empty lines,
         # space only lines etc
         self.sentences = sentences
+        """
+        sentences = [sentence for sentence in nltk.sent_tokenize(self.title + "\n" +self.text)
+                     if sentence and not sentence.isspace()]  # we discard empty lines,
+        # space only lines etc
+        """
 
     def set_token_length(self):
-        full_text = self.title + "\n" +self.text
-        self.token_length = len(full_text.split())
+        self.token_length = len(self.full_article.split())
 
 
     @classmethod
