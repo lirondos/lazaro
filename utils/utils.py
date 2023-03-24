@@ -134,9 +134,18 @@ def clean_html(article: Article):
 
     if "eldiario" in article.url:
         article.html = re.sub(r"<strong>M&aacute;s en tu mejor yo</strong>: <a.*?</a>", "",
-                              article.html)
+                              article.html) # Tu mejor yo
         article.html = re.sub(r"<q class=\"know-more\">.+?</q>", "",
                               article.html)  # articulo relacionado en eldiario
+        article.html = re.sub(r"<p class=\"article-text\">\s*(&ndash;)+\s*</p>", "",
+                              article.html) # Raya que separa el pie de suscríbete de eldiario
+        article.html = re.sub(r"<p class=\"article-text\">\s*<em><strong>Antes de que dejes de leer... </strong></em>\s*</p>", "",
+                              article.html) # Encabezado en el pie de suscríbete de eldiario
+        article.html = re.sub(r"<p class=\"article-text\">\s*elDiario.es se "
+                              r"financia.+?pagar.\s*</p>", "",article.html) #Suscríbete a elDiario
+        article.html = re.sub(r"<p class=\"article-text\">\s*Si te informas por "
+                              r"elDiario.es.+?hazte socia, de elDiario.es</span></a>.\s*</p>",
+                              "", article.html) #Suscríbete a elDiario
     if "elmundotoday" in article.url:
         article.html = re.sub(r"<div class=\"moove-gdpr-tab-main-content\">.+?</div>", "",
                            article.html) # cookies EMT
