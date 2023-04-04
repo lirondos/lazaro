@@ -45,7 +45,9 @@ class News(object):
         try:
             article = Article(self.url, config=self.config)
             article.download()
-            if "Noticia servida automáticamente por la Agencia EFE" in article.html:
+            if "Noticia servida automáticamente por la Agencia EFE" in article.html: # EFE
+                self.text = ""
+            elif "<div class=\"ue-c-article__premium\">" in article.html: # Ñapa paywall El Mundo
                 self.text = ""
             else:
                 clean_html(article)
