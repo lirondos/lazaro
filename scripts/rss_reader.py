@@ -1,21 +1,21 @@
+import logging
+import os
+import sys
+import time
+from abc import ABC, abstractmethod
+from typing import Dict
+
 import attr
 import feedparser
 import furl
-import sys
 import requests
-import os
 import xmltodict
-from typing import Dict
-import logging
-import time
 
+from scripts.news import News
 from utils.constants import *
 from utils.utils import is_invalid_url
 
-from abc import ABC, abstractmethod
-from scripts.news import News
-
-logger = logging.getLogger('__main__')
+logger = logging.getLogger("__main__")
 
 
 class Reader(ABC):
@@ -30,6 +30,7 @@ class Reader(ABC):
     @abstractmethod
     def news_from_entry(self, entry: dict) -> News:
         raise NotImplementedError
+
 
 @attr.s
 class FeedReader(object):
@@ -48,14 +49,21 @@ class FeedReader(object):
     def news_generator(self, already_seen={}):
         for entry in self._reader.get_entries():
             if self.newspaper in MEDIA_WITH_XML_FORMAT:
-                url = furl.furl(entry["NewsLines"]["DeriveredFrom"]).remove(args=True,
-                                                                    fragment=True).url
+                url = (
+                    furl.furl(entry["NewsLines"]["DeriveredFrom"])
+                    .remove(args=True, fragment=True)
+                    .url
+                )
             else:
-                url = furl.furl(entry["links"][0]["href"]).remove(args=True, fragment=True).url
+                url = (
+                    furl.furl(entry["links"][0]["href"])
+                    .remove(args=True, fragment=True)
+                    .url
+                )
             if is_invalid_url(url, self.newspaper):
                 logger.info("URL descartada al recorrer noticia %s", url)
             elif url in already_seen:
-                logger.info('Esta noticia ya la tengo: %s', url)
+                logger.info("Esta noticia ya la tengo: %s", url)
             else:
                 try:
                     news: News = self._reader.news_from_entry(entry)
@@ -73,8 +81,10 @@ class RssReader(Reader):
     section = attr.ib(type=str)
 
     def get_feed(self):
-        if self.newspaper == "abc" or self.newspaper == "eleconomista": # ñapa para el rss roto de abc y de eleconomista
-            headers = {'User-agent': 'Mozilla/5.0'}
+        if (
+            self.newspaper == "abc" or self.newspaper == "eleconomista"
+        ):  # ñapa para el rss roto de abc y de eleconomista
+            headers = {"User-agent": "Mozilla/5.0"}
             web_page = requests.get(self.rss_url, headers=headers, allow_redirects=True)
             content = web_page.content.strip()  # drop the first newline (if any)
             feed = feedparser.parse(content)
@@ -87,15 +97,19 @@ class RssReader(Reader):
         if feed.bozo == 1 and not feed["entries"]:
             logger.error("Algo falló con el rss %s", self.rss_url)
             return []
-        # we only keep entries from the last 3 days 
+        # we only keep entries from the last 3 days
         entries = []
         for entry in feed["entries"]:
             try:
                 if hasattr(entry, "published_parsed"):
-                    if time.time() - time.mktime(entry.published_parsed) < (86400*DAYS_SINCE):
+                    if time.time() - time.mktime(entry.published_parsed) < (
+                        86400 * DAYS_SINCE
+                    ):
                         entries.append(entry)
                 if hasattr(entry, "updated_parsed"):
-                    if time.time() - time.mktime(entry.updated_parsed) < (86400*DAYS_SINCE):
+                    if time.time() - time.mktime(entry.updated_parsed) < (
+                        86400 * DAYS_SINCE
+                    ):
                         entries.append(entry)
             except:
                 continue
@@ -116,13 +130,24 @@ class XMLReader(Reader):
             response = requests.get(url)
             data = xmltodict.parse(response.content)
             return data
-        except: 
+        except:
             return None
 
     def get_entries(self):
         data = XMLReader.get_feed(self.rss_url)
         if data:
-            filtered_entries = [entry for entry in data["NewsML"]["NewsItem"] if time.time() - time.mktime(time.strptime(entry["NewsManagement"]["FirstCreated"].split("+")[0], "%Y-%m-%dT%H:%M:%S")) < (86400*DAYS_SINCE)]
+            filtered_entries = [
+                entry
+                for entry in data["NewsML"]["NewsItem"]
+                if time.time()
+                - time.mktime(
+                    time.strptime(
+                        entry["NewsManagement"]["FirstCreated"].split("+")[0],
+                        "%Y-%m-%dT%H:%M:%S",
+                    )
+                )
+                < (86400 * DAYS_SINCE)
+            ]
             return filtered_entries
         return []
 

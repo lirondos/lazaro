@@ -1,20 +1,19 @@
-import tweepy
+import argparse
 import csv
-from datetime import datetime, timezone
-import time
+import logging
+import os
 import random
 import sys
-import os
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
-import argparse
-import logging
 
-
+import tweepy
 
 parser = argparse.ArgumentParser()
-parser.add_argument('root', type=str, help='Path to current directory')
-parser.add_argument('param', type=str, help='Path to file with params')
+parser.add_argument("root", type=str, help="Path to current directory")
+parser.add_argument("param", type=str, help="Path to file with params")
 args = parser.parse_args()
 
 sys.path.append(str(Path(args.root)))
@@ -22,9 +21,8 @@ print(sys.path)
 
 
 from scripts.secret import CONSUMER_KEY, CONSUMER_SECRET, KEY, SECRET
-from utils.constants import TO_BE_TWEETED_FOLDER, HOURS_TO_TWEET
-from utils.utils import set_logger, parse_config
-
+from utils.constants import HOURS_TO_TWEET, TO_BE_TWEETED_FOLDER
+from utils.utils import parse_config, set_logger
 
 
 def connect_to_twitter():
@@ -38,32 +36,31 @@ def connect_to_twitter():
     except Exception as e:
         logger.error("Error during Twitter authentication")
         logger.error(e)
-        
+
     return api
 
 
-
 def get_path_to_file() -> Path:
-    today = datetime.now(timezone.utc).strftime('%d%m%Y') + ".csv"
+    today = datetime.now(timezone.utc).strftime("%d%m%Y") + ".csv"
     tweet_file = Path(args.root) / Path(TO_BE_TWEETED_FOLDER) / Path(today)
-    logger.info('Tuiteando fichero: %s', tweet_file)
+    logger.info("Tuiteando fichero: %s", tweet_file)
     return tweet_file
+
 
 def get_tweets(tweet_file: Path) -> List:
     tweets = []
     with open(tweet_file) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        next(csv_reader) # skip header
+        csv_reader = csv.reader(csv_file, delimiter=",")
+        next(csv_reader)  # skip header
         for row in csv_reader:
             if len(row) == 0:
                 continue
-            (borrowing,lang,context,newspaper,url,date,categoria) = row
+            (borrowing, lang, context, newspaper, url, date, categoria) = row
 
-            mytweet = borrowing + "\n\n" + "\"..." + context + "...\"" + "\n" + url
+            mytweet = borrowing + "\n\n" + '"...' + context + '..."' + "\n" + url
             tweets.append(mytweet)
     random.shuffle(tweets)
     return tweets
-
 
 
 if __name__ == "__main__":
@@ -76,7 +73,9 @@ if __name__ == "__main__":
     for tweet in tweets:
         try:
             api.update_status(tweet)
-            time.sleep((HOURS_TO_TWEET*60*60)/len(tweets)) # distribuir cada tuit en un lapso de n horas (mult por 60*60 a segundos)
+            time.sleep(
+                (HOURS_TO_TWEET * 60 * 60) / len(tweets)
+            )  # distribuir cada tuit en un lapso de n horas (mult por 60*60 a segundos)
         except Exception as e:
             logger.error("Error al tuitear: %s", tweet)
             logger.error(e)
