@@ -1,17 +1,20 @@
-import attr
+import logging
 from typing import List
+
+import attr
+
+# import nltk
+import dateutil.parser as dateparser
+import furl
 from langdetect import detect
 from newspaper import Article, Config
 from sentence_splitter import SentenceSplitter
-#import nltk
-import dateutil.parser as dateparser
-import furl
-import logging
-from utils.utils import clean_html, contains_forbidden_pattern, remove_html_char
+
 from utils.constants import *
+from utils.utils import clean_html, contains_forbidden_pattern, remove_html_char
 
+logger = logging.getLogger("__main__")
 
-logger = logging.getLogger('__main__')
 
 @attr.s
 class News(object):
@@ -36,7 +39,7 @@ class News(object):
         self.set_token_length()
 
     def set_config_article(self):
-        user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0'
+        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0"
         self.config = Config()
         self.config.browser_user_agent = user_agent
         self.config.request_timeout = 20
@@ -45,10 +48,15 @@ class News(object):
         try:
             article = Article(self.url, config=self.config)
             article.download()
-            if "Noticia servida automáticamente por la Agencia EFE" in article.html: # EFE
+            if (
+                "Noticia servida automáticamente por la Agencia EFE" in article.html
+            ):  # EFE
                 self.text = ""
-            elif "<div class=\"ue-c-article__premium\">" in article.html: # Ñapa paywall El Mundo
+            elif contains_forbidden_pattern(article.html, PAYWALL_HTML_PATTERNS):
                 self.text = ""
+                logger.warning("Muro de pago detectado en el HTML: %s", self.url)
+            # elif "<div class=\"ue-c-article__premium\">" in article.html:  # Ñapa paywall El Mundo y ABC
+            # self.text = ""
             else:
                 clean_html(article)
                 article.parse()
@@ -67,14 +75,22 @@ class News(object):
             self.language = detect(self.full_article)
 
     def set_sentences(self):
-        new_line_sent: List = self.full_article.split('\n\n') # we first split \n\n breaks
-        splitter = SentenceSplitter(language='es')
-        splitted_sent = [e for s in new_line_sent for e in splitter.split(s)]  # we second split based on punct
-        #splitted_sent = [splitter.split(s) for s in new_line_sent] # we second split based on punct
-        sentences = [sentence for sentence in splitted_sent
-                          if sentence and not sentence.isspace()] # we third remove empty lines,
+        new_line_sent: List = self.full_article.split(
+            "\n\n"
+        )  # we first split \n\n breaks
+        splitter = SentenceSplitter(language="es")
+        splitted_sent = [
+            e for s in new_line_sent for e in splitter.split(s)
+        ]  # we second split based on punct
+        # splitted_sent = [splitter.split(s) for s in new_line_sent] # we second split based on punct
+        sentences = [
+            sentence.replace("\n", " ")
+            for sentence in splitted_sent
+            if sentence and not sentence.isspace()
+        ]  # we third remove empty lines,
         # space only lines etc
         self.sentences = sentences
+        self.text = " ".join(sentences)
         """
         sentences = [sentence for sentence in nltk.sent_tokenize(self.title + "\n" +self.text)
                      if sentence and not sentence.isspace()]  # we discard empty lines,
@@ -84,39 +100,63 @@ class News(object):
     def set_token_length(self):
         self.token_length = len(self.full_article.split())
 
-
     @classmethod
     def news_from_XML_entry(cls, newspaper: str, section: str, entry: dict) -> "News":
-        url = furl.furl(entry["NewsLines"]["DeriveredFrom"]).remove(args=True,
-                                                                    fragment=True).url
+        url = (
+            furl.furl(entry["NewsLines"]["DeriveredFrom"])
+            .remove(args=True, fragment=True)
+            .url
+        )
         date = entry["NewsManagement"]["FirstCreated"]
         title = remove_html_char(entry["NewsLines"]["HeadLine"])
-        author = entry["NewsLines"]["ByLine"] if "ByLine" in entry[
-            "NewsLines"] else None
+        author = (
+            entry["NewsLines"]["ByLine"] if "ByLine" in entry["NewsLines"] else None
+        )
         return cls(newspaper, section, url, title, author, date)
 
     @classmethod
     def news_from_rss_entry(cls, newspaper: str, section: str, entry: dict) -> "News":
-        url = furl.furl(entry["links"][0]["href"]).remove(args=True, fragment=True).url if \
-                "links" in entry else ""
-        date = dateparser.parse(entry['published']).strftime("%A, %d %B %Y") if "published" \
-                                                                                in entry else ""
+        url = (
+            furl.furl(entry["links"][0]["href"]).remove(args=True, fragment=True).url
+            if "links" in entry
+            else ""
+        )
+        date = (
+            dateparser.parse(entry["published"]).strftime("%A, %d %B %Y")
+            if "published" in entry
+            else ""
+        )
         if not date:
-            date = dateparser.parse(entry['updated']).strftime("%A, %d %B %Y") if "updated" \
-                                                                                    in entry else ""
+            date = (
+                dateparser.parse(entry["updated"]).strftime("%A, %d %B %Y")
+                if "updated" in entry
+                else ""
+            )
         title = remove_html_char(entry["title"])
-        author = entry['author'] if "author" in entry else ""
+        author = entry["author"] if "author" in entry else ""
         return cls(newspaper, section, url, title, author, date)
-       
+
+    @classmethod
+    def dummy_news(cls, url: str) -> "News":
+        """
+        A class method for testing purposes only. The idea is to have a method that can create a
+        News object based only on a given URL. This is used to test whether a given article is
+        being correctly extracted and parsed
+        :param url:
+        :return: News
+        """
+        return cls("Bla", "Bla", url, "Bla", "Bla", "Bla")
 
     def is_invalid_text(self) -> bool:
         if bool(self.text):
             return False
         logger.warning("Texto no válido: %s", self.url)
-        return True 
+        return True
 
     def is_invalid_url(self) -> bool:
-        if self.is_external_link() or contains_forbidden_pattern(self.url, FORBIDDEN_URL_PATTERNS):
+        if self.is_external_link() or contains_forbidden_pattern(
+            self.url, FORBIDDEN_URL_PATTERNS
+        ):
             logger.warning("URL no válido: %s", self.url)
             return True
         return False
@@ -130,15 +170,16 @@ class News(object):
             return True
         return False
 
-
     def has_paywall(self) -> bool:
         if contains_forbidden_pattern(self.text, PAYWALL_PATTERNS):
-            logger.warning("Muro de pago: %s", self.url)
+            logger.warning("Muro de pago detectado en el texto: %s", self.url)
             return True
         return False
 
     def is_invalid_author(self) -> bool:
-        if self.newspaper not in AGENCIAS and contains_forbidden_pattern(self.author, FORBIDDEN_AUTHOR_PATTERNS):
+        if self.newspaper not in AGENCIAS and contains_forbidden_pattern(
+            self.author, FORBIDDEN_AUTHOR_PATTERNS
+        ):
             logger.warning("Autor no válido: %s", self.url)
             return True
         return False
@@ -150,7 +191,7 @@ class News(object):
         return True
 
     def is_not_spanish(self) -> bool:
-        if (self.language == "es"):
+        if self.language == "es":
             return False
         logger.warning("Idioma no válido: %s", self.url)
         return True
@@ -162,12 +203,15 @@ class News(object):
         return False
 
     def is_valid_news(self):
-        if self.is_invalid_text() or self.is_invalid_url() or \
-                self.is_invalid_title() or self.is_not_spanish() or self.is_publirreportaje() or \
-                self.has_paywall() or self.is_invalid_author() or self.is_invalid_date():
+        if (
+            self.is_invalid_text()
+            or self.is_invalid_url()
+            or self.is_invalid_title()
+            or self.is_not_spanish()
+            or self.is_publirreportaje()
+            or self.has_paywall()
+            or self.is_invalid_author()
+            or self.is_invalid_date()
+        ):
             return False
         return True
-
-
-
-
