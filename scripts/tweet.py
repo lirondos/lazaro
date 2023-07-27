@@ -26,18 +26,18 @@ from utils.utils import parse_config, set_logger
 
 
 def connect_to_twitter():
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-    auth.set_access_token(KEY, SECRET)
-    api = tweepy.API(auth)
+    #auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    #auth.set_access_token(KEY, SECRET)
+    #api = tweepy.API(auth)
 
     try:
-        api.verify_credentials()
+        client = tweepy.Client(consumer_key=CONSUMER_KEY, consumer_secret=CONSUMER_SECRET, access_token=KEY, access_token_secret=SECRET)
         logger.info("Authentication OK")
     except Exception as e:
         logger.error("Error during Twitter authentication")
         logger.error(e)
 
-    return api
+    return client
 
 
 def get_path_to_file() -> Path:
@@ -69,10 +69,11 @@ if __name__ == "__main__":
     tweet_file = get_path_to_file()
     tweets = get_tweets(tweet_file)
 
-    api = connect_to_twitter()
+    client = connect_to_twitter()
     for tweet in tweets:
         try:
-            api.update_status(tweet)
+            client.create_tweet(text=tweet)
+            #api.update_status(tweet)
             time.sleep(
                 (HOURS_TO_TWEET * 60 * 60) / len(tweets)
             )  # distribuir cada tuit en un lapso de n horas (mult por 60*60 a segundos)
