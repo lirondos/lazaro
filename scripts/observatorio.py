@@ -17,8 +17,8 @@ from pylazaro import Lazaro
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-# sys.path.insert(0, os.path.abspath(".."))
-# sys.path.insert(0, os.path.abspath("."))
+#sys.path.insert(0, os.path.abspath(".."))
+#sys.path.insert(0, os.path.abspath("."))
 
 
 parser = argparse.ArgumentParser()
@@ -90,9 +90,9 @@ def main() -> None:
                     ):  # we skip sentences that have only 2 words of less
                         borrowings = result.borrowings
                         for bor in borrowings:
-                            if bor.text not in bor_index_cache:
+                            if bor.text.lower() not in bor_index_cache:
                                 try:
-                                    db_manager.add_borrowing_to_index(bor)
+                                    db_manager.add_borrowing_to_index(bor, news_item)
                                     time.sleep(1)
                                     bor_index_cache[bor.text] = 1
                                 except Exception as e:
@@ -103,14 +103,25 @@ def main() -> None:
                                     )
                                     logger.error(e)
                                     continue
-                            elif (
-                                bor_index_cache[bor.text] == 1
-                            ):  # bor index exist but was an hapax until now
-                                db_manager.update_hapax(bor)
-                                time.sleep(1)
-                                bor_index_cache[bor.text] = 0
-                                if config["tweet"]:
-                                    csv_writer.write_bor(bor, news_item)
+                            else:
+                                try:
+                                    db_manager.update_count(bor)
+                                    time.sleep(1)
+                                except Exception as e:
+                                    logger.error(
+                                        "Algo falló al actualizar en la bbdd la cuenta del anglicismo %s de la noticia: %s",
+                                        bor,
+                                        news_item.url,
+                                    )
+                                    logger.error(e)
+                                    continue
+                                if bor_index_cache[bor.text.lower()] == 1:  # bor index exist but was an hapax until now
+                                    db_manager.update_hapax(bor)
+                                    time.sleep(1)
+                                    bor_index_cache[bor.text.lower()] = 0
+                                    if config["tweet"]:
+                                        csv_writer.write_bor(bor, news_item)
+                            
                             try:
                                 db_manager.write_borrowing_to_db(bor, news_item, i)
                                 time.sleep(1)

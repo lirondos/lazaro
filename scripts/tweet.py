@@ -49,7 +49,7 @@ def get_path_to_file() -> Path:
 
 def get_tweets(tweet_file: Path) -> List:
     tweets = []
-    with open(tweet_file) as csv_file:
+    with open(tweet_file, encoding="utf-8") as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=",")
         next(csv_reader)  # skip header
         for row in csv_reader:

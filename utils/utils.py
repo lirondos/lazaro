@@ -191,6 +191,14 @@ def clean_html(article: Article):
             r"<div id=\"post-ratings-.+?Cargando…</div>", "", article.html
         )  # rating EFE
 
+    #TODO Lee también https://www.lavanguardia.com/politica/20230629/9076503/tve-presiona-feijoo-anunciando-debate-sanchez-abascal-diaz.html
+    if "lavanguardia" in article.url:
+        article.html = re.sub(
+            r"<span class=\"module-details\">.+?</span></span>",
+            "",
+            article.html,
+        )  # Lee también de LaVanguardia
+
     if "elle.com" in article.url:
         article.html = re.sub(
             r"<p class=\"affiliate-disclaimer-detail\">.+?</p>", "", article.html
