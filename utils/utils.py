@@ -63,6 +63,8 @@ def clean_html(article: Article):
     )
     article.html = re.sub(r"<blockquote cite=\".+?</blockquote>", "", article.html)
     article.html = re.sub(r"<figcaption.+?</figcaption>", "", article.html)
+    article.html = re.sub(r"<p class=\"caption-title \">.+?</p>", "", article.html)
+    article.html = re.sub(r"<span class=\"caption-author \">.+?</span>", "", article.html)
     article.html = re.sub(r"<span class=\"author .+?</span>", "", article.html)
     
     if "vertele" in article.url:
